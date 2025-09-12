@@ -11,28 +11,25 @@ parted() {
         	exit 1
 	fi
 	cfdisk $DISK
-	echo "$DISK" > ../tmp/disk
-	bash parted
+	./parted "$DISK"
 }
 
 install() {
-	bash ..core/installing
+	./basepack
 }
 
 pack() {
-	bash ..core/pack
+	./inst_pack
 }
 
 bootloader() {
-	bash ..core/bootloader
+	./bootloader
 }
-dialog --title "Quasar-instal" --menu "Выберите пункт: " 15 70 5 \
+seting=$(dialog --title "Quasar-instal" --menu "Выберите пункт: " 15 70 5 \
 1 "Разметка" \
 2 "Установка базы" \
 3 "Установка пакетов" \
-4 "Установка загрузчика" 2>../tmp/qinst
-
-seting=$(cat ../tmp/qinst)
+4 "Установка загрузчика" 3>&1 1>&2 2>&3 3>&-)
 
 case $seting in
 	1) parted ;;

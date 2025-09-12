@@ -1,0 +1,28 @@
+#!/bin/bash 
+
+de_wm=$(dialog --title "Меню" --menu "Выберите DE/WM: " 15 70 5 \
+1 "Hyprland" \
+2 "KDE Plasma" \
+3 "Xfce4" \
+4 "Lxde" \
+5 "lxqt" \
+6 "i3wm" \
+7 "sway" \
+8 "Gnome" 3>&1 1>&2 2>&3 3>&-)
+# Проверяем, не нажал ли пользователь Cancel или ESC
+if [ $? -ne 0 ]; then
+    clear
+    echo "пропускаем"
+    rm -f /tmp/menu.txt    
+fi
+case $de_wm in
+	1) ./wm_install Hyprland ;;
+	2) ./de_install plasma ;;
+	3) ./de_install xfce ;;
+	4) ./de_install lxde ;;
+	5) ./de_install lxqt ;;
+	6) ./wm_install i3wm ;;
+	7) ./wm_install sway ;;
+	8) ./de_install gnome ;;
+esac
+

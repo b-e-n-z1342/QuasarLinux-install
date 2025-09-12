@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Список пакетов: "tag" "отображаемое имя" "on/off"
+packages=(
+  1 "htop" off
+  2 "mc" off
+  3 "nano" on
+  4 "vim" on
+  5 "neovim" off
+  6 "ranger" off
+  7 "lynx" off
+  8 "w3m" off
+  9 "curl" on
+ 10 "wget" on
+ 11 "git" on
+ 12 "ncdu" off
+ 13 "tmux" off
+ 14 "screen" off
+ 15 "nmap" off
+ 16 "irssi" off
+ 17 "mutt" off
+ 18 "rtorrent" off
+ 19 "ffmpeg" off
+ 20 "unzip" off
+ 21 "zip" off
+ 22 "zsh" off
+ 23 "fish" off
+ 24 "rsync" off
+ 25 "sysstat" off
+ 26 "cmus" off
+ 27 "ncmpcpp" off
+ 28 "newsboat" off
+ 29 "fzf" off
+)
+
+selected=$(dialog --checklist "Выберите нужные пакеты:" 15 50 5 \
+  "${packages[@]}" 3>&1 1>&2 2>&3 3>&-)
+
+clear
+echo "Вы выбрали: $selected"
+install_list=()
+for num in $selected; do
+  # Удаляем кавычки вокруг номера
+  num=$(echo $num | tr -d '"')
+  # Позиция имени пакета: $((num * 3 - 2))
+  pkg_name=${packages[$((num * 3 - 2))]}
+  install_list+=("$pkg_name")
+done
+artix-chroot /mnt pacman -S "${install_list[@]}"

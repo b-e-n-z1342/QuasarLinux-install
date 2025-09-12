@@ -1,0 +1,57 @@
+#!/bin/bash
+
+linux_zen_base() {
+	basestrap /mnt linux-zen base base-devel openrc dbus dbus-openrc elogind-openrc linux-firmware
+}
+linux_lts_base() {
+	basestrap /mnt linux-lts base base-devel openrc dbus dbus-openrc elogind-openrc linux-firmware
+}
+linux_base() {
+	basestrap /mnt linux base base-devel openrc dbus dbus-openrc elogind-openrc linux-firmware
+}
+
+boxbase=$(dialog --title "Выберите ядро" --menu "Пакеты" 15 50 5 \
+1 "linux-zen" \
+2 "linux-lts" \
+3 "linux" 3>&1 1>&2 2>&3 3>&-)
+
+case $boxbase in
+	1) linux_zen_base ;;
+	2) linux_lts_base ;;
+	3) linux_base ;;
+esac
+
+tee > /mnt/usr/lib/os-release << 'OS_EOF'
+NAME="Quasar Linux"
+PRETTY_NAME="Quasar Linux (Artix base)"
+ID=quasar
+ID_LIKE=artix
+ANACONDA_ID="quasar"
+VERSION="REV-0.6"
+VERSION_ID="1.0"
+BUILD_ID="rolling"
+ANSI_COLOR="0;36"
+HOME_URL="https://b-e-n-z1342.github.io"
+LOGO=quasar-logo
+OS_EOF
+
+tee > /mnt/etc/lsb-release << 'LSB_EOF'
+DISTRIB_ID=Quasar
+DISTRIB_RELEASE=0.6
+DISTRIB_DESCRIPTION="Quasar Linux"
+DISTRIB_CODENAME=rolling
+LSB_EOF
+
+# Принудительная настройка issue
+echo "Quasar Linux \\r \\l" > /mnt/etc/issue
+echo "Quasar Linux" > /mnt/etc/issue.net
+echo "Welcome to Quasar Linux!" > /mnt/etc/motd
+
+# Убираем автогенерацию
+[ -d /mnt/etc/update-motd.d/ ] && rm -rf /mnt/etc/update-motd.d/
+
+# Симлинк для совместимости
+ln -sf /mnt/etc/os-release /mnt/usr/lib/os-release 2>/dev/null || true
+chattr +i /mnt/usr/lib/os-release /mnt/etc/lsb-release 2>/dev/null || true
+chmod +x inst_pack
+./inst_pack

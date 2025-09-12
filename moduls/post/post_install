@@ -1,0 +1,36 @@
+#!/bin/bash
+
+full_post() {
+	./post1_install
+	./post2_install
+	./android_install
+	./audio_install
+	./wine_install
+	./android_install
+	./clean_full
+}
+
+set=$(dialog --title "quasar-post-install" --menu "выберите пункт: " 15 70 5 \
+1 "Экспрес" \
+2 "1 этап" \
+3 "2 этап" \
+4 "Adroid установка" \
+5 "Установка wine" \
+6 "Установка аудио" \
+7 "Установка браузера" \
+3>&1 1>&2 2>&3 3>&-)
+
+
+if [ $? -ne 0 ]; then
+    clear
+    echo "пропускаем"
+fi
+case $set in
+	1) full_post ;;
+	2) ./post1_install ;;
+	3) ./post2_install ;;
+	4) ./android_install ;;
+	5) ./wine_install ;;
+	6) ./audio_install ;;
+	7) ./browser_install ;;
+esac

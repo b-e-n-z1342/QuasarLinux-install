@@ -1,0 +1,48 @@
+#!/bin/bash 
+
+sudo pacmna -Syy
+#!/bin/bash
+
+packages=(
+  1 "go" on
+  2 "qt5" off
+  3 "qt6" off
+  4 "ffmpeg" off
+  5 "gamemode" off
+  6 "polkit" off
+  7 "x264" on
+  8 "x265" on
+  9 "openh264" on
+ 10 "qemu" off
+ 11 "grub-customizer" off
+ 12 "wayland" on
+ 13 "xorg" on
+ 14 "gtk2" off
+ 15 "gtk3" off
+ 16 "gt4" on
+ 17 "qbittorrent" off
+ 18 "qbittorrent-openrc" off
+)
+
+selected=$(dialog --checklist "Выберите нужные пакеты для установки:" 20 60 15 \
+  "${packages[@]}" 3>&1 1>&2 2>&3 3>&-)
+
+clear
+
+echo "Вы выбрали: $selected"
+
+# Преобразуем номера в имена пакетов
+install_list=()
+for num in $selected; do
+  # Удаляем кавычки вокруг номера
+  num=$(echo $num | tr -d '"')
+  # Позиция имени пакета: $((num * 3 - 2))
+  pkg_name=${packages[$((num * 3 - 2))]}
+  install_list+=("$pkg_name")
+done
+
+echo "Устанавливаем: ${install_list[@]}"
+# Если нужно реально установить:
+sudo pacman -S "${install_list[@]}"
+
+
