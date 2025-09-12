@@ -1,0 +1,24 @@
+#!/bin/bash
+
+pipe() {
+	./audio_install pipewire
+}
+
+pulse() {
+	./audio_install pulseaudio
+}
+
+jack() {
+	./audio_install jack
+}
+
+audio=(dialog --title "Меню" --menu "Выберите звуковой сервер: " 15 70 5 \
+1 "pipewire" \
+2 "pulseaudio" \
+3 "jack2" 3>&1 1>&2 2>&3 3>&-)
+
+case $audio in
+	1) pipe ;;
+	2) pulse ;;
+	3) jack ;;
+esac

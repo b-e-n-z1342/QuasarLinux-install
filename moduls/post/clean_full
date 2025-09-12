@@ -1,0 +1,4 @@
+#!/bin/bash
+sudo rm -rf /tpm/*
+sudo pacman -Scc --noconfirm
+sudo rm -rf /var/tmp/*
