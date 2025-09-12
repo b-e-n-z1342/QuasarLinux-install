@@ -1,0 +1,75 @@
+#!/bin/bash
+
+DISK=$(cat ../tmp/disk)
+
+ext() {
+	mkfs.ext4 -F "$DISK"
+}
+
+btrfs() {
+	mkfs.btrfs -f "$DISK"
+}
+
+xfs() {
+	mkfs.xfs -f -i size=512 "$DISK"
+}
+
+dialog --title "Quasar-install" --menu "Выберите файловую систему: " 15 70 5 \
+1 "ext4" \
+2 "btrfs" \
+3 "xfs" 2>../tmp/partfs
+# Проверяем, не нажал ли пользователь Cancel или ESC
+if [ $? -ne 0 ]; then
+    echo "пропускаем"
+    rm -f ../tmp/partfs    
+fi
+
+fs=$(cat ../tmp/partfs)
+case $fs in
+	1) ext ;;
+	2) btrfs ;;
+	3) xfs ;;
+esac
+
+clear
+
+home_part() {
+    read -p "Введите раздел для HOME (например, sda2): " HOME_PART
+    HOME_PART="/dev/$HOME_PART"
+    [ ! -e "$HOME_PART" ] && echo "Ошибка: $HOME_PART не существует!" && exit 1
+    format_home_ext() {
+        mkfs.ext4 -F "$HOME_PART"
+    }
+    format_home_btrfs() {
+        mkfs.btrfs -f "$HOME_PART"
+    }
+    dialog --title "Выбор варианта" \
+        --ok-label "Выбрать" \
+        --no-cancel \
+        --menu "Выберите файловую систему для /home" 15 40 4 \
+        1 "ext4" \
+       	2 "btrfs" \
+    	3 "xfs" 2>../tmp/homefs.choice
+    format_home=$(cat ../tmp/homefs.choice)
+    case $format_home in
+        1) format_home_ext ;;
+        2) format_home_btrfs ;;
+    esac
+}
+non_home() {
+    echo "OK"
+}
+
+if [ $? -ne 0 ]; then
+    clear
+    echo "пропускаем"
+    rm -f ../tmp/part
+fi
+
+home_parted=$(../tmp/part)
+case $home_parted in
+	1) home_part ;;
+	2) non_home ;;
+esac
+rm -f ../tmp/part
+rm -f ../tmp/*

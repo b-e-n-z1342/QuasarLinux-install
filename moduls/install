@@ -1,0 +1,42 @@
+#!/bin/bash
+
+parted() {
+	clear
+	echo "Выберите диск"
+	lsblk -d -o NAME,SIZE,MODEL,TYPE
+	read -p "Введите имя диска (например, sda/nvme0n1): " DISK
+	DISK="/dev/$DISK"
+	if [ ! -e "$DISK" ]; then
+  		echo "Ошибка: диск $DISK не существует!"
+        	exit 1
+	fi
+	cfdisk $DISK
+	echo "$DISK" > ../tmp/disk
+	bash parted
+}
+
+install() {
+	bash ..core/installing
+}
+
+pack() {
+	bash ..core/pack
+}
+
+bootloader() {
+	bash ..core/bootloader
+}
+dialog --title "Quasar-instal" --menu "Выберите пункт: " 15 70 5 \
+1 "Разметка" \
+2 "Установка базы" \
+3 "Установка пакетов" \
+4 "Установка загрузчика" 2>../tmp/qinst
+
+seting=$(cat ../tmp/qinst)
+
+case $seting in
+	1) parted ;;
+	2) install ;;
+	3) pack ;;
+	4) bootloader ;;
+esac
