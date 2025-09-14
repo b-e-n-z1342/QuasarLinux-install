@@ -1,36 +1,70 @@
 #!/bin/bash
+main() {
+	full_post() {
+		./post1_install
+		./post2_install
+		./android_install
+		./audio_config
+		./wine_install
+		./android_install
+		./clean_full
+	}
 
-full_post() {
-	./post1_install
-	./post2_install
-	./android_install
-	./audio_install
-	./wine_install
-	./android_install
-	./clean_full
+	post() {
+		./post1_install
+		main
+	}
+
+	post_two() {
+		./post2_install
+		main
+	}
+
+	android_install() {
+		./android_install
+		main
+	}
+
+	wine() {
+		./wine_install
+		main
+	}
+
+	audio() {
+		./audio_config
+		main
+	}
+
+	browser() {
+		./browser_install
+		sleep 2
+		main
+	}
+
+	set=$(dialog --title "quasar-post-install" --menu "выберите пункт: " 15 70 5 \
+	1 "Экспрес" \
+	2 "1 этап" \
+	3 "2 этап" \
+	4 "Adroid установка" \
+	5 "Установка wine" \
+	6 "Установка аудио" \
+	7 "Установка браузера" \
+	3>&1 1>&2 2>&3 3>&-)
+
+
+	if [ $? -ne 0 ]; then
+	    clear
+	    echo "пропускаем"
+	fi
+
+	case $set in
+		1) full_post ;;
+		2) post ;;
+		3) post_two ;;
+		4) android_install ;;
+		5) wine ;;
+		6) audio ;;
+		7) browser ;;
+	esac
 }
-
-set=$(dialog --title "quasar-post-install" --menu "выберите пункт: " 15 70 5 \
-1 "Экспрес" \
-2 "1 этап" \
-3 "2 этап" \
-4 "Adroid установка" \
-5 "Установка wine" \
-6 "Установка аудио" \
-7 "Установка браузера" \
-3>&1 1>&2 2>&3 3>&-)
-
-
-if [ $? -ne 0 ]; then
-    clear
-    echo "пропускаем"
-fi
-case $set in
-	1) full_post ;;
-	2) ./post1_install ;;
-	3) ./post2_install ;;
-	4) ./android_install ;;
-	5) ./wine_install ;;
-	6) ./audio_install ;;
-	7) ./browser_install ;;
-esac
+main

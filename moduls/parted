@@ -31,9 +31,9 @@ esac
 mount "$DISK" /mnt
 clear
 
+lsblk
 home_part() {
-    read -p "Введите раздел для HOME (например, sda2): " HOME_PART
-    HOME_PART="/dev/$HOME_PART"
+    read -p "Введите раздел для HOME (например, /dev/sda2): " HOME_PART
     [ ! -e "$HOME_PART" ] && echo "Ошибка: $HOME_PART не существует!" && exit 1
 
     format_home_ext() {
