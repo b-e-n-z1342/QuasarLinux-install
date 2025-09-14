@@ -4,34 +4,10 @@ full_post() {
 	./post1_install
 	./post2_install
 	./android_install
-	./audio_config
+	./audio_install
 	./wine_install
 	./android_install
 	./clean_full
-}
-
-post() {
-	./post1_install
-}
-
-post_two() {
-	./post2_install
-}
-
-android_install() {
-	./android_install
-}
-
-wine() {
-	./wine_install
-}
-
-audio() {
-	./audio_config
-}
-
-browser() {
-	./browser_config
 }
 
 set=$(dialog --title "quasar-post-install" --menu "выберите пункт: " 15 70 5 \
@@ -49,13 +25,12 @@ if [ $? -ne 0 ]; then
     clear
     echo "пропускаем"
 fi
-
 case $set in
 	1) full_post ;;
-	2) post ;;
-	3) post_two ;;
-	4) android_install ;;
-	5) wine ;;
-	6) audio ;;
-	7) browser ;;
+	2) ./post1_install ;;
+	3) ./post2_install ;;
+	4) ./android_install ;;
+	5) ./wine_install ;;
+	6) ./audio_install ;;
+	7) ./browser_install ;;
 esac
