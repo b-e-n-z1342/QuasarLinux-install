@@ -8,6 +8,7 @@ main() {
 		./wine_install
 		./android_install
 		./clean_full
+		sudo reboot
 	}
 
 	post() {

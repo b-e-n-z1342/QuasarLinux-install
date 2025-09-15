@@ -1,0 +1,18 @@
+#!/bin/bash
+
+user_user() {
+	user=$(dialog --inputbox "Введите имя пользователя" 8 40 3>&1 1>&2 2>&3 3>&-) 
+	[ $? -ne 0 ] && clear && echo "Отменено" && exit 1
+	password=$(dialog --stdout --insecure --passwordbox "Введите пароль:" 8 40)
+	[ $? -ne 0 ] && clear && echo "Отменено" && exit 1
+	artix-chroot /mnt useradd -m -g "$group" "$username"
+	artix-chroot /mnt echo "$username:$password" | chpasswd
+}
+root_user() {
+	password=$(dialog --stdout --insecure --passwordbox "Введите пароль для root:" 8 40)
+	[ $? -ne 0 ] && clear && echo "Отменено" && exit 1
+	artix-chroot /mnt echo "root:$password" | chpasswd
+
+}
+user_user
+root_user
