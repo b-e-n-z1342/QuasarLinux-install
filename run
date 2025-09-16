@@ -4,13 +4,12 @@ chmod +x arch/install
 chmod +x moduls/* 
 chmod +x models/post/*
 ./arch/install
-
+pacman -Syy
 which dialog || pacamn -S dialog
 which curl || pacman -S curl
 which git || pacman -S git
+which mkfs.fat || pacman -S dosfstools
 setfont ter-v16n || pacman -S terminus-font && setfont ter-16n
-
-pacman -Syy
 
 clear
 echo "Установка QuasarLinux REV-1"
@@ -18,4 +17,4 @@ sleep 2
 ls
 ls moduls/
 
-moduls/install
+bash moduls/install
