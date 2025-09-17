@@ -4,7 +4,7 @@
 Это новый модульный установщик для QuasarLinux! Каждый модуль независим от другого и могут работать по одиночки.
 ## Инструкция
 вся инструкция находится на github wiki Quasar-install
-![wiki](https://github.com/b-e-n-z1342/QuasarLinux-install/wiki)
+[wiki](https://github.com/b-e-n-z1342/QuasarLinux-install/wiki)
 ## Описание модулей 
 начнём с модулей которые лежат в moduls/ 
 ```
