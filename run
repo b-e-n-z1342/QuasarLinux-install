@@ -1,8 +1,8 @@
 #/bin/bash 
 clear
 chmod +x arch/install
-chmod +x moduls/* 
-chmod +x models/post/*
+chmod +x modules/* 
+chmod +x modeles/post/*
 ./arch/install
 pacman -Syy
 which dialog || pacamn -S dialog
@@ -14,7 +14,6 @@ setfont ter-v16n || pacman -S terminus-font && setfont ter-16n
 clear
 echo "Установка QuasarLinux REV-1"
 sleep 2
-ls
-ls moduls/
+ls modules/
 
-bash moduls/install
+bash modules/install

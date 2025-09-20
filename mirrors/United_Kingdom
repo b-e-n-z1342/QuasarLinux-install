@@ -1,0 +1,3 @@
+Server = http://artist.artixlinux.org/repos/$repo/os/$arch
+Server = https://mirror.vinehost.net/artix-linux/$repo/os/$arch
+

@@ -1,0 +1,3 @@
+Server = https://mirrors.dotsrc.org/artix-linux/repos/$repo/os/$arch
+Server = https://mirror.group.one/artix/$repo/os/$arch
+

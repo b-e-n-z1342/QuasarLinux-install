@@ -5,6 +5,7 @@ main() {
 		./post2_install
 		./android_install
 		./audio_config
+		./region/region_config
 		./wine_install
 		./android_install
 		./clean_full
@@ -35,6 +36,9 @@ main() {
 		./audio_config
 		main
 	}
+	region() {
+		./region/region_config
+	}
 
 	browser() {
 		./browser_install
@@ -49,7 +53,8 @@ main() {
 	4 "Adroid установка" \
 	5 "Установка wine" \
 	6 "Установка аудио" \
-	7 "Установка браузера" \
+	7 "Настройка времяни" \
+	8 "Установка браузера" \
 	3>&1 1>&2 2>&3 3>&-)
 
 

@@ -1,12 +1,11 @@
 #!/bin/bash 
 
-sudo pacmna -Syy
-#!/bin/bash
 
+sudo pacmna -Syy
 packages=(
   1 "go" on
-  2 "qt5" off
-  3 "qt6" off
+  2 "qt5" on
+  3 "qt6" on
   4 "ffmpeg" off
   5 "gamemode" off
   6 "polkit" off
@@ -16,7 +15,7 @@ packages=(
  10 "qemu" off
  11 "grub-customizer" off
  12 "wayland" on
- 13 "xorg" on
+ 13 "xorg" off
  14 "gtk2" off
  15 "gtk3" off
  16 "gt4" on
@@ -42,7 +41,6 @@ for num in $selected; do
 done
 
 echo "Устанавливаем: ${install_list[@]}"
-# Если нужно реально установить:
 sudo pacman -S "${install_list[@]}"
 
 

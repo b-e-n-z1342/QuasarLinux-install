@@ -1,0 +1,4 @@
+Server = https://mirror.csclub.uwaterloo.ca/artixlinux/$repo/os/$arch
+Server = https://artix-linux.mirrors.prairievoice.ca/$repo/os/$arch
+
+

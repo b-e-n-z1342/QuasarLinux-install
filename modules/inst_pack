@@ -23,17 +23,23 @@ packages=(
  19 "ffmpeg" off
  20 "unzip" off
  21 "zip" off
- 22 "zsh" off
- 23 "fish" off
+ 22 "go" off
+ 23 "qt6" off
  24 "rsync" off
  25 "sysstat" off
  26 "cmus" off
  27 "ncmpcpp" off
  28 "newsboat" off
  29 "fzf" off
+ 30 "gtk4" on
+ 31 "gtk3" on
+ 32 "gtk2" off
+ 33 "qt5" on
+ 34 "docker" off
+ 35 "docker-openrc" off
 )
 
-selected=$(dialog --checklist "Выберите нужные пакеты:" 15 50 5 \
+selected=$(dialog --checklist "Выберите нужные пакеты:" 30 50 5 \
   "${packages[@]}" 3>&1 1>&2 2>&3 3>&-)
 
 clear

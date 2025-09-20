@@ -16,7 +16,7 @@ if [ $? -ne 0 ]; then
     rm -f /tmp/menu.txt    
 fi
 case $de_wm in
-	1) ./wm_install Hyprland ;;
+	1) ./wm_install hyprland ;;
 	2) ./de_install plasma ;;
 	3) ./de_install xfce ;;
 	4) ./de_install lxde ;;

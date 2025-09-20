@@ -1,0 +1,9 @@
+##
+## Artix Linux repository mirrorlist
+## Generated on 2025-03-26
+##
+
+Server = https://mirror.clarkson.edu/artix-linux/repos/$repo/os/$arch
+Server = http://ftp.ntua.gr/pub/linux/artix-linux/$repo/os/$arch
+Server = https://mirrors.dotsrc.org/artix-linux/repos/$repo/os/$arch
+
