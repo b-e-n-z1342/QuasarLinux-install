@@ -52,4 +52,4 @@ for num in $selected; do
   pkg_name=${packages[$((num * 3 - 2))]}
   install_list+=("$pkg_name")
 done
-artix-chroot /mnt pacman -S "${install_list[@]}"
+fast-chroot /mnt pacman -S "${install_list[@]}"

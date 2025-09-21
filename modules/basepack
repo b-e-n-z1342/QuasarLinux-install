@@ -1,13 +1,13 @@
 #!/bin/bash
 
 linux_zen_base() {
-	basestrap /mnt linux-zen base base-devel openrc dbus dbus-openrc elogind-openrc linux-firmware
+	basestrap /mnt linux-zen base base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-zen-headers dialog acpid linux-api-headers
 }
 linux_lts_base() {
-	basestrap /mnt linux-lts base base-devel openrc dbus dbus-openrc elogind-openrc linux-firmware
+	basestrap /mnt linux-lts base mkinitcpio base-devel openrc dbus dbus-openrc elogind-openrc linux-firmware ntfs-3g dosfstools dialog acpid linux-api-headers linux-lts-headers
 }
 linux_base() {
-	basestrap /mnt linux base base-devel openrc dbus dbus-openrc elogind-openrc linux-firmware
+	basestrap /mnt linux base mkinitcpio base-devel openrc dbus dbus-openrc elogind-openrc linux-firmware ntfs-3g dosfstools dialog acpid linux-api-headers linux-headers
 }
 
 boxbase=$(dialog --title "Выберите ядро" --menu "Пакеты" 15 50 5 \
