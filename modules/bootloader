@@ -50,13 +50,13 @@ else
         fast-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
     }
     function syslinux() { 
+        BOOT_PART=$(findmnt -n -o SOURCE /mnt/boot))
         BOOT_NUMBER=$(echo $BOOT_PART | sed 's/.*[^0-9]\([0-9]\+\)$/\1/')
         parted $DISK set $BOOT_NUMBER boot on
         fast-chroot /mnt pacman -S syslinux --noconfirm
         mkdir -p /mnt/boot/syslinux
         fast-chroot /mnt extlinux --install /boot/syslinux
         cp /mnt/usr/lib/syslinux/bios/*.c32 /mnt/boot/syslinux/
-        fast-chroot /mnt dd if=/usr/lib/syslinux/bios/mbr.bin of="$DISK" bs=440 count=1 conv=notrunc
         fast-chroot /mnt tee /boot/syslinux/syslinux.cfg << EOFD
 DEFAULT Quasarlinux
 PROMPT 0
@@ -67,6 +67,7 @@ LABEL Quasarlinux
     APPEND root=UUID=$ROOT_UUID rw
     INITRD /initramfs-linux-zen.img
 EOFD
+        fast-chroot /mnt dd if=/usr/lib/syslinux/bios/mbr.bin of="$DISK" bs=440 count=1 conv=notrunc
     }
     dialog --title "Выбор варианта" \
            --ok-label "Выбрать" \

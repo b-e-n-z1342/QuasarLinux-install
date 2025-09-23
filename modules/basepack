@@ -1,13 +1,14 @@
 #!/bin/bash
+set -euo pipefail
 
 linux_zen_base() {
-	basestrap /mnt linux-zen base base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-zen-headers dialog acpid linux-api-headers
+	basestrap /mnt terminus-font linux-zen base base-devel openrc dbus dbus-openrc elogind-openrc linux-firmware
 }
 linux_lts_base() {
-	basestrap /mnt linux-lts base mkinitcpio base-devel openrc dbus dbus-openrc elogind-openrc linux-firmware ntfs-3g dosfstools dialog acpid linux-api-headers linux-lts-headers
+	basestrap /mnt terminus-font linux-lts base base-devel openrc dbus dbus-openrc elogind-openrc linux-firmware
 }
 linux_base() {
-	basestrap /mnt linux base mkinitcpio base-devel openrc dbus dbus-openrc elogind-openrc linux-firmware ntfs-3g dosfstools dialog acpid linux-api-headers linux-headers
+	basestrap /mnt terminus-font linux base base-devel openrc dbus dbus-openrc elogind-openrc linux-firmware
 }
 
 boxbase=$(dialog --title "Выберите ядро" --menu "Пакеты" 15 50 5 \
@@ -28,7 +29,7 @@ ID=quasar
 ID_LIKE=artix
 ANACONDA_ID="quasar"
 VERSION="REV-0.6"
-VERSION_ID="1.0"
+VERSION_ID="0.6"
 BUILD_ID="rolling"
 ANSI_COLOR="0;36"
 HOME_URL="https://b-e-n-z1342.github.io"
@@ -46,7 +47,15 @@ LSB_EOF
 echo "Quasar Linux \\r \\l" > /mnt/etc/issue
 echo "Quasar Linux" > /mnt/etc/issue.net
 echo "Welcome to Quasar Linux!" > /mnt/etc/motd
+sleep 5
+clear
+echo "Активация сервисов"
+fast-chroot /mnt rc-update add dbus default
+fast-chroot /mnt rc-update add udev default
+fast-chroot /mnt rc-update add elogind default
+fast-chroot /mnt rc-update add acpid default
 
+cp ../configs/pacman.conf /mnt/etc/
 # Убираем автогенерацию
 [ -d /mnt/etc/update-motd.d/ ] && rm -rf /mnt/etc/update-motd.d/
 
@@ -54,4 +63,4 @@ echo "Welcome to Quasar Linux!" > /mnt/etc/motd
 ln -sf /mnt/etc/os-release /mnt/usr/lib/os-release 2>/dev/null || true
 chattr +i /mnt/usr/lib/os-release /mnt/etc/lsb-release 2>/dev/null || true
 chmod +x inst_pack
-./inst_pack
+
