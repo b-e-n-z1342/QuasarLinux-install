@@ -33,15 +33,11 @@ parted_menu() {
 	fi
 	cfdisk $DISK
 }
-<<<<<<< HEAD
 user() {
 	clear
 	$SCRIPT_DIR/users
 	clear
 }
-=======
-
->>>>>>> bfdba32367a36619c2b1e44fa9b75540a231031d
 
 while true; do
     seting=$(dialog --title "Quasar-install" --menu "Выберите пункт:" 15 70 6 \
@@ -61,11 +57,7 @@ while true; do
         2) parted_menu ;;
         3) "$SCRIPT_DIR/basepack" ;;
         4) "$SCRIPT_DIR/inst_pack" ;;
-<<<<<<< HEAD
         5) user ;;
-=======
-        5) "$SCRIPT_DIR/users" ;;
->>>>>>> bfdba32367a36619c2b1e44fa9b75540a231031d
         6) "$SCRIPT_DIR/bootloader" ;;
         7) break ;;
     esac

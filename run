@@ -2,7 +2,7 @@
 clear
 chmod +x arch/install
 chmod +x modules/* 
-chmod +x modeles/post/*
+chmod +x modules/post/*
 ./arch/install
 pacman -Syy
 which dialog || pacamn -S dialog
