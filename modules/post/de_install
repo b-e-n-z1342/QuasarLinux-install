@@ -18,7 +18,7 @@ plasma() {
 }
 
 xfce() {
-        sudo pacman -S --needed xfce4 thunar xorg lightdm lightdm-openrc lightdm-gtk-greeter lightdm-gtk-greeter-settings  --noconfirm
+	sudo pacman -S --needed xfce4 thunar xorg lightdm lightdm-openrc lightdm-gtk-greeter lightdm-gtk-greeter-settings  --noconfirm
 	sudo rc-update add lightdm default
 }
 
@@ -28,7 +28,8 @@ lxqt() {
 }
 
 lxde() {
-	sudo pacman -S lxde lxdm lxdm-openrc --noconfirm
+	sudo pacman -S lxde lxdm  --noconfirm
+	sudo pacman -S lxdm-openrc --noconfirm --force
 	sudo rc-update add lxdm default
 }
 

@@ -18,7 +18,7 @@ packages=(
  13 "xorg" off
  14 "gtk2" off
  15 "gtk3" off
- 16 "gt4" on
+ 16 "gtk4" on
  17 "qbittorrent" off
  18 "qbittorrent-openrc" off
 )

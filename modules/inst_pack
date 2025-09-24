@@ -61,15 +61,26 @@ gpu_info=$(lspci -nn | grep -i 'VGA\|3D\|Display' | head -1)  # Берем то�
 
 if echo "$gpu_info" | grep -qi "AMD"; then
     echo "Обнаружена видеокарта AMD"
+<<<<<<< HEAD
+    fast-chroot /mnt pacman -S --noconfirm mesa vulkan-radeon libva-mesa-driver mesa-vdpau
+elif echo "$gpu_info" | grep -qi "Intel"; then
+    echo "Обнаружена видеокарта Intel"
+    fast-chroot /mnt pacman -S --noconfirm mesa vulkan-intel intel-media-driver libva-intel-driver
+=======
     artix-chroot /mnt pacman -S --noconfirm mesa vulkan-radeon libva-mesa-driver mesa-vdpau
 elif echo "$gpu_info" | grep -qi "Intel"; then
     echo "Обнаружена видеокарта Intel"
     artix-chroot /mnt pacman -S --noconfirm mesa vulkan-intel intel-media-driver libva-intel-driver
+>>>>>>> bfdba32367a36619c2b1e44fa9b75540a231031d
 elif echo "$gpu_info" | grep -qi "NVIDIA"; then
     echo "Обнаружена видеокарта NVIDIA"
     echo "!!! NVIDIA драйвера могут быть не стабильны и иметь проблемы с Wayland !!!"
     sleep 5
+<<<<<<< HEAD
+    fast-chroot /mnt pacman -S --noconfirm nvidia nvidia-utils nvidia-settings lib32-nvidia-utils
+=======
     artix-chroot /mnt pacman -S --noconfirm nvidia nvidia-utils nvidia-settings lib32-nvidia-utils
+>>>>>>> bfdba32367a36619c2b1e44fa9b75540a231031d
 elif echo "$gpu_info" | grep -qi "QXL"; then
     echo "Обнаружена виртуальная видеокарта QXL (QEMU)"
     artix-chroot /mnt pacman -S --noconfirm xf86-video-qxl mesa
@@ -78,13 +89,28 @@ elif echo "$gpu_info" | grep -qi "QXL"; then
     fast-chroot /mnt rc-update add qemu-guest-agent default
 elif echo "$gpu_info" | grep -qi "Virtio"; then
     echo "Обнаружена виртуальная видеокарта Virtio (QEMU/KVM)"
+<<<<<<< HEAD
+    fast-chroot /mnt pacman -S --noconfirm xf86-video-virtio mesa
+    fast-chroot /mnt pacman -S --noconfirm qemu-guest-agent
+    fast-chroot /mnt rc-update add qemu-guest-agent default
+=======
     artix-chroot /mnt pacman -S --noconfirm xf86-video-virtio mesa
     artix-chroot /mnt pacman -S --noconfirm qemu-guest-agent
     artix-chroot /mnt rc-update add qemu-guest-agent default
+>>>>>>> bfdba32367a36619c2b1e44fa9b75540a231031d
 else
     echo "Видеокарта не определена, устанавливаю базовые драйверы"
     echo "Осторожно: низкая производительность!"
     sleep 3
+<<<<<<< HEAD
+    fast-chroot /mnt pacman -S --noconfirm mesa xf86-video-vesa xf86-video-fbdev
+fi
+
+
+fast-chroot /mnt pacman -S "${install_list[@]}"
+
+=======
     artix-chroot /mnt pacman -S --noconfirm mesa xf86-video-vesa xf86-video-fbdev
 fi
 
+>>>>>>> bfdba32367a36619c2b1e44fa9b75540a231031d

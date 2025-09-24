@@ -37,7 +37,7 @@ main() {
 		main
 	}
 	region() {
-		./region/region_config
+		/regions/region
 	}
 
 	browser() {
@@ -70,7 +70,8 @@ main() {
 		4) android_install ;;
 		5) wine ;;
 		6) audio ;;
-		7) browser ;;
+		7) region ;;
+		8) browser ;;
 	esac
 }
 main

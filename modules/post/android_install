@@ -29,6 +29,13 @@ EOF
 
 }
 
+bilisos_kvm() {
+    sudo pacman -S qemu-full --noconfirm --needed
+    clear
+    echo "В разрабоке!"
+
+}
+
 set=$(dialog --title "quasar-post-install" --menu "выберите пункт: " 15 70 5 \
     1 "Waydroid" \
     2 "BilisOS-QEMU/KVM" \

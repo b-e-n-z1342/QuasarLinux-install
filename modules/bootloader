@@ -57,6 +57,13 @@ else
         mkdir -p /mnt/boot/syslinux
         fast-chroot /mnt extlinux --install /boot/syslinux
         cp /mnt/usr/lib/syslinux/bios/*.c32 /mnt/boot/syslinux/
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        fast-chroot /mnt dd if=/usr/lib/syslinux/bios/mbr.bin of="$DISK" bs=440 count=1 conv=notrunc
+>>>>>>> d875754a925bacf550d3f14fbc620842d2923f17
+=======
+>>>>>>> bfdba32367a36619c2b1e44fa9b75540a231031d
         fast-chroot /mnt tee /boot/syslinux/syslinux.cfg << EOFD
 DEFAULT Quasarlinux
 PROMPT 0
