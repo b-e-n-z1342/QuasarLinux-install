@@ -1,42 +1,59 @@
 #!/bin/bash 
+set -euo pipefail
+
 UEFI_MODE=0
 [ -d /sys/firmware/efi ] && UEFI_MODE=1
+
 root_dev=$(findmnt -n -o SOURCE /mnt)
 ROOT_UUID=$(blkid -s UUID -o value "$root_dev")
 export ROOT_UUID
+
 mnt_dev=$(findmnt -n -o SOURCE /mnt)
 disk_dev=$(lsblk -no PKNAME "$mnt_dev")
 DISK="/dev/$disk_dev"
 echo "Диск, на котором лежит /mnt: $DISK"
+
 if [ "$UEFI_MODE" -eq 1 ]; then
     function grub() {
+        echo "Установка GRUB для UEFI..."
         fast-chroot /mnt pacman -S grub os-prober efibootmgr --noconfirm
         fast-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB --removable --recheck
-        fast-chroot /mnt sed -i 's/^GRUB_DISTRIBUTOR=.*/GRUB_DISTRIBUTOR="Quasar Linux"/' /etc/default/grub || echo 'GRUB_DISTRIBUTOR="Quasar Linux"' >> /etc/default/grub
+        fast-chroot /mnt bash -c 'sed -i "s/^GRUB_DISTRIBUTOR=.*/GRUB_DISTRIBUTOR=\"Quasar Linux\"/" /etc/default/grub || echo "GRUB_DISTRIBUTOR=\"Quasar Linux\"" >> /etc/default/grub'
         fast-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+        echo "GRUB установлен для UEFI"
     }
     
     function efistub() {
+        echo "Установка EFISTUB..."
         fast-chroot /mnt pacman -S efibootmgr os-prober --noconfirm
-        fast-chroot /mnt efibootmgr -b 0000 -B
-        fast-chroot /mnt cp /boot/vmlinuz-linux-zen /boot/efi/vmlinuz-linux-zen.efi
-        fast-chroot /mnt cp /boot/initramfs-linux-zen.img /boot/efi/initramfs-linux-zen.img
-        fast-chroot /mnt efibootmgr -c -d "$DISK" -p 1 -L "QuasarLinux" -l '\vmlinuz-linux-zen.efi' -u "root=UUID=$ROOT_UUID rw initrd=\initramfs-linux-zen.img"
+        fast-chroot /mnt efibootmgr -b 0000 -B 2>/dev/null || true
+        fast-chroot /mnt cp /boot/vmlinuz-linux /boot/efi/vmlinuz-linux.efi 2>/dev/null || \
+        fast-chroot /mnt cp /boot/vmlinuz-linux-zen /boot/efi/vmlinuz-linux-zen.efi 2>/dev/null || \
+        fast-chroot /mnt cp /boot/vmlinuz-linux-lts /boot/efi/vmlinuz-linux-lts.efi
+        
+        fast-chroot /mnt cp /boot/initramfs-linux.img /boot/efi/initramfs-linux.img 2>/dev/null || \
+        fast-chroot /mnt cp /boot/initramfs-linux-zen.img /boot/efi/initramfs-linux-zen.img 2>/dev/null || \
+        fast-chroot /mnt cp /boot/initramfs-linux-lts.img /boot/efi/initramfs-linux-lts.img
+        
+        fast-chroot /mnt efibootmgr -c -d "$DISK" -p 1 -L "QuasarLinux" -l '\vmlinuz-linux.efi' -u "root=UUID=$ROOT_UUID rw initrd=\initramfs-linux.img"
+        echo "EFISTUB настроен"
     }
+    
     function refind() {
+        echo "Установка rEFInd..."
         fast-chroot /mnt pacman -S efibootmgr os-prober refind --noconfirm
         fast-chroot /mnt refind-install
+        echo "rEFInd установлен"
     }
 
-    dialog --title "Выбор варианта" \
+    boot=$(dialog --title "Выбор загрузчика UEFI" \
            --ok-label "Выбрать" \
            --no-cancel \
-           --menu "Выберите опцию:" 15 40 4 \
-           1 "grub" \
-           2 "efistub" \
-           3 "refind" 2>/tmp/bootloader.choice
-
-    boot=$(cat /tmp/bootloader.choice)
+           --menu "Выберите загрузчик:" 15 40 4 \
+           1 "GRUB" \
+           2 "EFISTUB" \
+           3 "rEFInd" 3>&1 1>&2 2>&3)
+    
     case $boot in
         1) grub ;;
         2) efistub ;;
@@ -44,48 +61,53 @@ if [ "$UEFI_MODE" -eq 1 ]; then
     esac
 else
     function grub() {
+        echo "Установка GRUB для BIOS..."
         fast-chroot /mnt pacman -S grub os-prober --noconfirm
         fast-chroot /mnt grub-install --target=i386-pc --boot-directory=/boot --recheck "$DISK"
-        fast-chroot /mnt sed -i 's/^GRUB_DISTRIBUTOR=.*/GRUB_DISTRIBUTOR="Quasar Linux"/' /etc/default/grub || echo 'GRUB_DISTRIBUTOR="Quasar Linux"' >> /etc/default/grub
+        fast-chroot /mnt bash -c 'sed -i "s/^GRUB_DISTRIBUTOR=.*/GRUB_DISTRIBUTOR=\"Quasar Linux\"/" /etc/default/grub || echo "GRUB_DISTRIBUTOR=\"Quasar Linux\"" >> /etc/default/grub'
         fast-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+        echo "GRUB установлен для BIOS"
     }
+    
     function syslinux() { 
-        BOOT_PART=$(findmnt -n -o SOURCE /mnt/boot))
-        BOOT_NUMBER=$(echo $BOOT_PART | sed 's/.*[^0-9]\([0-9]\+\)$/\1/')
-        parted $DISK set $BOOT_NUMBER boot on
+        echo "Установка Syslinux..."
+        BOOT_PART=$(findmnt -n -o SOURCE /mnt/boot 2>/dev/null || findmnt -n -o SOURCE /mnt)
+        BOOT_NUMBER=$(echo "$BOOT_PART" | sed 's/.*[^0-9]\([0-9]\+\)$/\1/')
+        parted "$DISK" set "$BOOT_NUMBER" boot on
+        
         fast-chroot /mnt pacman -S syslinux --noconfirm
         mkdir -p /mnt/boot/syslinux
         fast-chroot /mnt extlinux --install /boot/syslinux
         cp /mnt/usr/lib/syslinux/bios/*.c32 /mnt/boot/syslinux/
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
         fast-chroot /mnt dd if=/usr/lib/syslinux/bios/mbr.bin of="$DISK" bs=440 count=1 conv=notrunc
->>>>>>> d875754a925bacf550d3f14fbc620842d2923f17
-=======
->>>>>>> bfdba32367a36619c2b1e44fa9b75540a231031d
-        fast-chroot /mnt tee /boot/syslinux/syslinux.cfg << EOFD
+        
+        cat > /mnt/boot/syslinux/syslinux.cfg << 'EOFD'
 DEFAULT Quasarlinux
 PROMPT 0
 TIMEOUT 50
 
 LABEL Quasarlinux
-    KERNEL /vmlinuz-linux-zen
+    KERNEL /vmlinuz-linux
     APPEND root=UUID=$ROOT_UUID rw
-    INITRD /initramfs-linux-zen.img
+    INITRD /initramfs-linux.img
 EOFD
-        fast-chroot /mnt dd if=/usr/lib/syslinux/bios/mbr.bin of="$DISK" bs=440 count=1 conv=notrunc
+        
+        # Заменяем UUID в конфигурационном файле
+        sed -i "s/\$ROOT_UUID/$ROOT_UUID/g" /mnt/boot/syslinux/syslinux.cfg
+        echo "Syslinux установлен"
     }
-    dialog --title "Выбор варианта" \
+
+    boot=$(dialog --title "Выбор загрузчика BIOS" \
            --ok-label "Выбрать" \
            --no-cancel \
-           --menu "Выберите опцию:" 15 40 4 \
-           1 "grub" \
-           2 "syslinux" 2>/tmp/bootloader.choice
-
-    boot=$(cat /tmp/bootloader.choice) 
+           --menu "Выберите загрузчик:" 15 40 4 \
+           1 "GRUB" \
+           2 "Syslinux" 3>&1 1>&2 2>&3)
+    
     case $boot in
         1) grub ;;
         2) syslinux ;;
     esac
 fi
+
+echo "Установка загрузчика завершена!"
