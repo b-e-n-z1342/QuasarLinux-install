@@ -1,77 +1,81 @@
 #!/bin/bash
-main() {
-	full_post() {
-		./post1_install
-		./post2_install
-		./android_install
-		./audio_config
-		./region/region_config
-		./wine_install
-		./android_install
-		./clean_full
-		sudo reboot
-	}
 
-	post() {
-		./post1_install
-		main
-	}
+main_menu() {
+    full_post() {
+        ./post1_install
+        ./post2_install
+        ./audio_config
+        ./wine_install
+        ./android_install
+        ./clean_full
+        read -p "Перезагрузить систему? (y/N): " reboot_choice
+        if [[ $reboot_choice == "y" || $reboot_choice == "Y" ]]; then
+            sudo reboot
+        fi
+    }
 
-	post_two() {
-		./post2_install
-		main
-	}
+    post_one() {
+        ./post1_install
+    }
 
-	android_install() {
-		./android_install
-		main
-	}
+    post_two() {
+        ./post2_install
+    }
 
-	wine() {
-		./wine_install
-		main
-	}
+    android_install() {
+        ./android_install
+    }
 
-	audio() {
-		./audio_config
-		main
-	}
-	region() {
-		/regions/region
-	}
+    wine_install() {
+        ./wine_install
+    }
 
-	browser() {
-		./browser_install
-		sleep 2
-		main
-	}
+    audio_config() {
+        ./audio_config
+    }
 
-	set=$(dialog --title "quasar-post-install" --menu "выберите пункт: " 15 70 5 \
-	1 "Экспрес" \
-	2 "1 этап" \
-	3 "2 этап" \
-	4 "Adroid установка" \
-	5 "Установка wine" \
-	6 "Установка аудио" \
-	7 "Настройка времяни" \
-	8 "Установка браузера" \
-	3>&1 1>&2 2>&3 3>&-)
+    browser_install() {
+        ./browser_install
+    }
 
+    clean_system() {
+        ./clean_full
+    }
 
-	if [ $? -ne 0 ]; then
-	    clear
-	    echo "пропускаем"
-	fi
+    choice=$(dialog --title "quasar-post-install" --menu "Выберите пункт: " 15 70 8 \
+        1 "Экспресс-установка (все этапы)" \
+        2 "1 этап (базовые пакеты)" \
+        3 "2 этап (DE/WM)" \
+        4 "Android (Waydroid)" \
+        5 "Wine" \
+        6 "Аудио-система" \
+        7 "Браузеры" \
+        8 "Очистка системы" \
+        3>&1 1>&2 2>&3 3>&-)
 
-	case $set in
-		1) full_post ;;
-		2) post ;;
-		3) post_two ;;
-		4) android_install ;;
-		5) wine ;;
-		6) audio ;;
-		7) region ;;
-		8) browser ;;
-	esac
+    case $? in
+        0)
+            case $choice in
+                1) full_post ;;
+                2) post_one ;;
+                3) post_two ;;
+                4) android_install ;;
+                5) wine_install ;;
+                6) audio_config ;;
+                7) browser_install ;;
+                8) clean_system ;;
+            esac
+            ;;
+        *)
+            clear
+            echo "Выход из программы."
+            exit 0
+            ;;
+    esac
+    
+    # Возврат в меню после выполнения
+    read -p "Нажмите Enter для возврата в меню..."
+    main_menu
 }
-main
+
+main_menu

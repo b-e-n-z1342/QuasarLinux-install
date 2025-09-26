@@ -1,9 +1,13 @@
 #!/bin/bash
 audio="$1"
+
 pipewire_sound() {
-    	sudo pacman -S --noconfirm  --overwrite '*' --needed pipewire lib32-libpipewire libpipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber pipewire-audio pipewire-openrc pipewire-pulse-openrc lib32-pipewire-jack
-    	clear
-    	sudo cat /etc/init.d/wireplumber << EOF
+    sudo pacman -S --noconfirm --overwrite '*' --needed pipewire lib32-libpipewire libpipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber pipewire-audio pipewire-openrc pipewire-pulse-openrc lib32-pipewire-jack
+    
+    clear
+    
+    sudo mkdir -p /etc/init.d
+    sudo tee /etc/init.d/wireplumber > /dev/null << 'EOF'
 #!/sbin/openrc-run
 
 command="/usr/bin/wireplumber"
@@ -17,7 +21,7 @@ depend() {
 }
 EOF
 
-    	sudo cat /etc/init.d/pipewire << EOF
+    sudo tee /etc/init.d/pipewire > /dev/null << 'EOF'
 #!/sbin/openrc-run
 
 command="/usr/bin/pipewire"
@@ -29,7 +33,8 @@ depend() {
     need elogind
 }
 EOF
-    	sudo cat /etc/asound.conf << EOF
+
+    sudo tee /etc/asound.conf > /dev/null << 'EOF'
 pcm.!default {
     type hw
     card 0
@@ -40,7 +45,8 @@ ctl.!default {
     card 0
 }
 EOF
-    	sudo cat ~/.asoundrc << EOF
+
+    tee ~/.asoundrc > /dev/null << 'EOF'
 pcm.!default {
     type plug
     slave.pcm "pipewire"
@@ -56,25 +62,27 @@ ctl.!default {
     type pipewire
 }
 EOF
-    	sudo pacman -S pavucontrol --noconfirm
-    	sudo chmod +x /etc/init.d/pipewire
-    	sudo chmod +x /etc/init.d/wireplumber
-    	sudo rc-update add pipewire default
-    	sudo rc-update add pipewire-pulse default
-    	sudo usermod -aG audio $USER
+
+    sudo pacman -S pavucontrol --noconfirm
+    sudo chmod +x /etc/init.d/pipewire
+    sudo chmod +x /etc/init.d/wireplumber
+    sudo rc-update add pipewire default
+    sudo rc-update add pipewire-pulse default
+    sudo usermod -aG audio $USER
 }
 
 pulseaudio_sound() {
-    	sudo pacman -S --noconfirm  --overwrite '*' --needed pulseaudio pulseaudio-alsa pulseaudio-jack
-    	sudo rc-update add pulseaudio --user
+    sudo pacman -S --noconfirm --overwrite '*' --needed pulseaudio pulseaudio-alsa pulseaudio-jack
+    sudo rc-update add pulseaudio --user
 }
 
-jack() {
-    	sudo pacman --noconfirm  --overwrite '*' --needed jack2 jack2-dbus jack_utils lib32-jack2 
+jack_sound() {
+    sudo pacman -S --noconfirm --overwrite '*' --needed jack2 jack2-dbus jack_utils lib32-jack2 
 }
 
-case $audio in
-	pipewire) pipewire_sound ;;
-	pulseaudio) pulseaudio_sound ;;
-	jack) jack ;;
+case "$audio" in
+    pipewire) pipewire_sound ;;
+    pulseaudio) pulseaudio_sound ;;
+    jack) jack_sound ;;
+    *) echo "Неизвестный звуковой сервер: $audio" ;;
 esac

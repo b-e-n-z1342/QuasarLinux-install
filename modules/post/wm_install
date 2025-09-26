@@ -1,28 +1,30 @@
 #!/bin/bash
 wm="$1"
 
-sudo pacman -S ly ly-openrc
-rc-update add ly default
-
-hyprland() {
-   	sudo pacman -S --needed hyprland waybar rofi kitty hyprland-protocols hyprgraphics hypridle hyprcursor hyprland-qt-support hyprutils xdg-desktop-portal-hyprland  --noconfirm
-	sudo pacman -S --needed --noconfirm dolphin 
-    	sudo rc-update add ly default
+install_hyprland() {
+    sudo pacman -S --needed hyprland waybar rofi kitty hyprland-protocols hyprgraphics hypridle hyprcursor hyprland-qt-support hyprutils xdg-desktop-portal-hyprland --noconfirm
+    sudo pacman -S --needed --noconfirm dolphin 
+    sudo rc-update add ly default
 }
 
-sway() {
-	sudo pacman -S sway swayidle swaylock waybar wl-clipboard foot wayland seatd seatd-openrc --needed --noconfirm
-	sudo chmod +x /etc/init.d/seatd
-	sudo rc-update add seatd default
+install_sway() {
+    sudo pacman -S sway swayidle swaylock waybar wl-clipboard foot wayland seatd seatd-openrc --needed --noconfirm
+    sudo chmod +x /etc/init.d/seatd
+    sudo rc-update add seatd default
 }
 
-itreewm() {
-	sudo pacman -S xorg-server xorg-xinit --noconfirm --needed
-	sudo pacman -S --needed --noconfirm i3-wm i3status i3lock dmenu rxvt-unicode
+install_i3() {
+    sudo pacman -S xorg-server xorg-xinit --noconfirm --needed
+    sudo pacman -S --needed --noconfirm i3-wm i3status i3lock dmenu rxvt-unicode
 }
 
-case $wm in
-	hyprland) hyprland ;;
-	sway) sway ;;
-	i3-wm) itreewm ;;
+# Установка ly для всех WM
+sudo pacman -S ly ly-openrc --noconfirm
+sudo rc-update add ly default
+
+case "$wm" in
+    hyprland) install_hyprland ;;
+    sway) install_sway ;;
+    i3wm) install_i3 ;;
+    *) echo "Неизвестный оконный менеджер: $wm" ;;
 esac

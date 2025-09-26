@@ -1,46 +1,54 @@
 #!/bin/bash 
 
+sudo pacman -Syy
 
-sudo pacmna -Syy
 packages=(
-  1 "go" on
-  2 "qt5" on
-  3 "qt6" on
-  4 "ffmpeg" off
-  5 "gamemode" off
-  6 "polkit" off
-  7 "x264" on
-  8 "x265" on
-  9 "openh264" on
- 10 "qemu" off
- 11 "grub-customizer" off
- 12 "wayland" on
- 13 "xorg" off
- 14 "gtk2" off
- 15 "gtk3" off
- 16 "gtk4" on
- 17 "qbittorrent" off
- 18 "qbittorrent-openrc" off
+    "go" on
+    "qt5" on
+    "qt6" on
+    "ffmpeg" off
+    "gamemode" off
+    "polkit" off
+    "x264" on
+    "x265" on
+    "openh264" on
+    "qemu" off
+    "grub-customizer" off
+    "wayland" on
+    "xorg" off
+    "gtk2" off
+    "gtk3" off
+    "gtk4" on
+    "qbittorrent" off
+    "qbittorrent-openrc" off
 )
 
-selected=$(dialog --checklist "Выберите нужные пакеты для установки:" 20 60 15 \
-  "${packages[@]}" 3>&1 1>&2 2>&3 3>&-)
-
-clear
-
-echo "Вы выбрали: $selected"
-
-# Преобразуем номера в имена пакетов
-install_list=()
-for num in $selected; do
-  # Удаляем кавычки вокруг номера
-  num=$(echo $num | tr -d '"')
-  # Позиция имени пакета: $((num * 3 - 2))
-  pkg_name=${packages[$((num * 3 - 2))]}
-  install_list+=("$pkg_name")
+# Создаем аргументы для dialog
+dialog_args=()
+for ((i=0; i<${#packages[@]}; i+=3)); do
+    dialog_args+=("$((i/3+1))" "${packages[i]}" "${packages[i+1]}")
 done
 
-echo "Устанавливаем: ${install_list[@]}"
-sudo pacman -S "${install_list[@]}"
+selected=$(dialog --checklist "Выберите нужные пакеты для установки:" 20 60 15 "${dialog_args[@]}" 3>&1 1>&2 2>&3 3>&-)
 
-
+case $? in
+    0)
+        clear
+        if [ -n "$selected" ]; then
+            install_list=()
+            for num in $selected; do
+                index=$(( (num - 1) * 3 ))
+                install_list+=("${packages[index]}")
+            done
+            
+            echo "Устанавливаем: ${install_list[@]}"
+            sudo pacman -S --noconfirm "${install_list[@]}"
+        else
+            echo "Не выбрано ни одного пакета."
+        fi
+        ;;
+    *)
+        clear
+        echo "Выбор пакетов отменен."
+        ;;
+esac
