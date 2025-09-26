@@ -2,42 +2,44 @@
 set -euo pipefail
 
 linux_zen_base() {
-<<<<<<< HEAD
- 	basestrap /mnt terminus-font linux-zen  base 	base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-zen-headers dialog acpid linux-api-headers flatpak
-	fast-chroot /mnt flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    basestrap /mnt terminus-font linux-zen base base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-zen-headers dialog acpid linux-api-headers flatpak
+    fast-chroot /mnt flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 }
+
 linux_lts_base() {
-	basestrap /mnt terminus-font linux-lts  base 	base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-lts-headers dialog acpid linux-api-headers flatpak
-	fast-chroot /mnt flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    basestrap /mnt terminus-font linux-lts base base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-lts-headers dialog acpid linux-api-headers flatpak
+    fast-chroot /mnt flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 }
+
 linux_base() {
-	basestrap /mnt terminus-font linux       base 	ase-devel  mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-headers     dialog acpid linux-api-headers flatpak
-	fast-chroot /mnt flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-=======
-	basestrap /mnt terminus-font linux-zen base base-devel openrc dbus dbus-openrc elogind-openrc linux-firmware
-}
-linux_lts_base() {
-	basestrap /mnt terminus-font linux-lts base base-devel openrc dbus dbus-openrc elogind-openrc linux-firmware
-}
-linux_base() {
-	basestrap /mnt terminus-font linux base base-devel openrc dbus dbus-openrc elogind-openrc linux-firmware
->>>>>>> bfdba32367a36619c2b1e44fa9b75540a231031d
+    basestrap /mnt terminus-font linux base base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-headers dialog acpid linux-api-headers flatpak
+    fast-chroot /mnt flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 }
 
-
-
+# Диалог выбора ядра
 boxbase=$(dialog --title "Выберите ядро" --menu "Пакеты" 15 50 5 \
-1 "linux-zen" \
-2 "linux-lts" \
-3 "linux" 3>&1 1>&2 2>&3 3>&-)
+    1 "linux-zen" \
+    2 "linux-lts" \
+    3 "linux" \
+    3>&1 1>&2 2>&3 3>&-)
 
-case $boxbase in
-	1) linux_zen_base ;;
-	2) linux_lts_base ;;
-	3) linux_base ;;
+case $? in
+    0)
+        case $boxbase in
+            1) linux_zen_base ;;
+            2) linux_lts_base ;;
+            3) linux_base ;;
+            *) echo "Неверный выбор"; exit 1 ;;
+        esac
+        ;;
+    *)
+        echo "Выбор отменен"
+        exit 1
+        ;;
 esac
 
-tee > /mnt/usr/lib/os-release << 'OS_EOF'
+# Создание файлов OS release
+cat > /mnt/usr/lib/os-release << 'OS_EOF'
 NAME="Quasar Linux"
 PRETTY_NAME="Quasar Linux (Artix base)"
 ID=quasar
@@ -51,7 +53,7 @@ HOME_URL="https://b-e-n-z1342.github.io"
 LOGO=quasar-logo
 OS_EOF
 
-tee > /mnt/etc/lsb-release << 'LSB_EOF'
+cat > /mnt/etc/lsb-release << 'LSB_EOF'
 DISTRIB_ID=Quasar
 DISTRIB_RELEASE=0.6
 DISTRIB_DESCRIPTION="Quasar Linux"
@@ -62,25 +64,51 @@ LSB_EOF
 echo "Quasar Linux \\r \\l" > /mnt/etc/issue
 echo "Quasar Linux" > /mnt/etc/issue.net
 echo "Welcome to Quasar Linux!" > /mnt/etc/motd
+
 sleep 5
 clear
 echo "Активация сервисов"
+
+# Активация сервисов
 fast-chroot /mnt rc-update add dbus default
 fast-chroot /mnt rc-update add udev default
 fast-chroot /mnt rc-update add elogind default
 fast-chroot /mnt rc-update add acpid default
 
-cp ../configs/pacman.conf /mnt/etc/
-<<<<<<< HEAD
-cp -r ../post /mnt/
-cp -r ../region /mnt/
-=======
->>>>>>> bfdba32367a36619c2b1e44fa9b75540a231031d
-# Убираем автогенерацию
-[ -d /mnt/etc/update-motd.d/ ] && rm -rf /mnt/etc/update-motd.d/
+# Копирование конфигурационных файлов
+if [ -f ../configs/pacman.conf ]; then
+    cp ../configs/pacman.conf /mnt/etc/
+else
+    echo "Предупреждение: pacman.conf не найден"
+fi
+
+# Копирование post-инсталляционных скриптов
+if [ -d ../post ]; then
+    cp -r ../post /mnt/
+fi
+
+# Копирование региональных настроек
+if [ -d ../region ]; then
+    cp -r ../region /mnt/
+fi
+
+# Убираем автогенерацию motd
+if [ -d /mnt/etc/update-motd.d/ ]; then
+    rm -rf /mnt/etc/update-motd.d/
+fi
 
 # Симлинк для совместимости
-ln -sf /mnt/etc/os-release /mnt/usr/lib/os-release 2>/dev/null || true
-chattr +i /mnt/usr/lib/os-release /mnt/etc/lsb-release 2>/dev/null || true
-chmod +x inst_pack
+ln -sf /usr/lib/os-release /mnt/etc/os-release 2>/dev/null || true
 
+# Защита системных файлов (только если они существуют)
+[ -f /mnt/usr/lib/os-release ] && chattr +i /mnt/usr/lib/os-release 2>/dev/null || true
+[ -f /mnt/etc/lsb-release ] && chattr +i /mnt/etc/lsb-release 2>/dev/null || true
+
+# Делаем скрипт установки пакетов исполняемым
+if [ -f inst_pack ]; then
+    chmod +x inst_pack
+else
+    echo "Предупреждение: inst_pack не найден"
+fi
+
+echo "Базовая установка завершена!"
