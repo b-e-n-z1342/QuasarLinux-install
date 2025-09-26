@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+
 # Список пакетов: "tag" "отображаемое имя" "on/off"
 packages=(
   1 "htop" off
@@ -39,78 +40,64 @@ packages=(
  35 "docker-openrc" off
 )
 
+# Выбор пакетов через dialog
 selected=$(dialog --checklist "Выберите нужные пакеты:" 30 50 5 \
   "${packages[@]}" 3>&1 1>&2 2>&3 3>&-)
 
 clear
 echo "Вы выбрали: $selected"
+
+# Формируем список имён пакетов
 install_list=()
 for num in $selected; do
-  # Удаляем кавычки вокруг номера
-  num=$(echo $num | tr -d '"')
-  # Позиция имени пакета: $((num * 3 - 2))
+  num=$(echo "$num" | tr -d '"')
   pkg_name=${packages[$((num * 3 - 2))]}
   install_list+=("$pkg_name")
 done
-fast-chroot /mnt pacman -S "${install_list[@]}" networkmanager networkmanager-openrc
+
+# Устанавливаем выбранные пакеты + NetworkManager и его OpenRC-интеграцию
+if [ ${#install_list[@]} -gt 0 ]; then
+  fast-chroot /mnt pacman -S --noconfirm "${install_list[@]}" networkmanager networkmanager-openrc
+else
+  fast-chroot /mnt pacman -S --noconfirm networkmanager networkmanager-openrc
+fi
+
 fast-chroot /mnt rc-update add networkmanager default
+
 clear
 echo "Определение видеокарты..."
 sleep 2
-gpu_info=$(lspci -nn | grep -i 'VGA\|3D\|Display' | head -1)  # Берем только первую видеокарту
+gpu_info=$(lspci -nn | grep -i 'VGA\|3D\|Display' | head -1)
 
 if echo "$gpu_info" | grep -qi "AMD"; then
     echo "Обнаружена видеокарта AMD"
-<<<<<<< HEAD
     fast-chroot /mnt pacman -S --noconfirm mesa vulkan-radeon libva-mesa-driver mesa-vdpau
+
 elif echo "$gpu_info" | grep -qi "Intel"; then
     echo "Обнаружена видеокарта Intel"
     fast-chroot /mnt pacman -S --noconfirm mesa vulkan-intel intel-media-driver libva-intel-driver
-=======
-    artix-chroot /mnt pacman -S --noconfirm mesa vulkan-radeon libva-mesa-driver mesa-vdpau
-elif echo "$gpu_info" | grep -qi "Intel"; then
-    echo "Обнаружена видеокарта Intel"
-    artix-chroot /mnt pacman -S --noconfirm mesa vulkan-intel intel-media-driver libva-intel-driver
->>>>>>> bfdba32367a36619c2b1e44fa9b75540a231031d
+
 elif echo "$gpu_info" | grep -qi "NVIDIA"; then
     echo "Обнаружена видеокарта NVIDIA"
     echo "!!! NVIDIA драйвера могут быть не стабильны и иметь проблемы с Wayland !!!"
     sleep 5
-<<<<<<< HEAD
     fast-chroot /mnt pacman -S --noconfirm nvidia nvidia-utils nvidia-settings lib32-nvidia-utils
-=======
-    artix-chroot /mnt pacman -S --noconfirm nvidia nvidia-utils nvidia-settings lib32-nvidia-utils
->>>>>>> bfdba32367a36619c2b1e44fa9b75540a231031d
+
 elif echo "$gpu_info" | grep -qi "QXL"; then
     echo "Обнаружена виртуальная видеокарта QXL (QEMU)"
-    artix-chroot /mnt pacman -S --noconfirm xf86-video-qxl mesa
-    # Установка гостевых утилит для QEMU
-    fast-chroot /mnt pacman -S --noconfirm qemu-guest-agent
+    fast-chroot /mnt pacman -S --noconfirm xf86-video-qxl mesa qemu-guest-agent
     fast-chroot /mnt rc-update add qemu-guest-agent default
+
 elif echo "$gpu_info" | grep -qi "Virtio"; then
     echo "Обнаружена виртуальная видеокарта Virtio (QEMU/KVM)"
-<<<<<<< HEAD
-    fast-chroot /mnt pacman -S --noconfirm xf86-video-virtio mesa
-    fast-chroot /mnt pacman -S --noconfirm qemu-guest-agent
+    fast-chroot /mnt pacman -S --noconfirm xf86-video-virtio mesa qemu-guest-agent
     fast-chroot /mnt rc-update add qemu-guest-agent default
-=======
-    artix-chroot /mnt pacman -S --noconfirm xf86-video-virtio mesa
-    artix-chroot /mnt pacman -S --noconfirm qemu-guest-agent
-    artix-chroot /mnt rc-update add qemu-guest-agent default
->>>>>>> bfdba32367a36619c2b1e44fa9b75540a231031d
+
 else
     echo "Видеокарта не определена, устанавливаю базовые драйверы"
     echo "Осторожно: низкая производительность!"
     sleep 3
-<<<<<<< HEAD
     fast-chroot /mnt pacman -S --noconfirm mesa xf86-video-vesa xf86-video-fbdev
 fi
 
-
-fast-chroot /mnt pacman -S "${install_list[@]}"
-
-=======
-    artix-chroot /mnt pacman -S --noconfirm mesa xf86-video-vesa xf86-video-fbdev
-fi
-
->>>>>>> bfdba32367a36619c2b1e44fa9b75540a231031d
+echo "Установка завершена."
