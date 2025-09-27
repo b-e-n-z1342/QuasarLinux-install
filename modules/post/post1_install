@@ -21,6 +21,18 @@ packages=(
     "gtk4" on
     "qbittorrent" off
     "qbittorrent-openrc" off
+    "vlc" off
+    "gwenview" off
+    "krita" off
+    "grub-customizer" off
+    "jdk-openjdk" off
+    "jre8-openjdk" off
+    "jre-openjdk" off
+    "openjdk-src" off
+    "kdeconnect" off
+    "virt-manager" off
+    "libvirt" on
+    "libvirt-openrc" on
 )
 
 # Создаем аргументы для dialog
