@@ -19,7 +19,7 @@ if [ $UEFI_MODE -eq 1 ]; then
 else
     read -p "Введите раздел для BOOT (например, sda1): " BOOT_PART
     BOOT_PART="/dev/$BOOT_PART"
-    mkfs.ext2 -f "$BOOT_PART"
+    mkfs.ext2 -F "$BOOT_PART"
 fi
 
 # Проверка разделов
