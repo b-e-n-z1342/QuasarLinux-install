@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-
+clear
 # Список пакетов: "tag" "отображаемое имя" "on/off"
 packages=(
   1 "htop" off
@@ -32,16 +32,17 @@ packages=(
  27 "ncmpcpp" off
  28 "newsboat" off
  29 "fzf" off
- 30 "gtk4" on
- 31 "gtk3" on
+ 30 "gtk4" off
+ 31 "gtk3" off
  32 "gtk2" off
- 33 "qt5" on
+ 33 "qt5" off
  34 "docker" off
  35 "docker-openrc" off
+
 )
 
 # Выбор пакетов через dialog
-selected=$(dialog --checklist "Выберите нужные пакеты:" 30 50 5 \
+selected=$(dialog --checklist "Выберите нужные пакеты:" 45 50 5 \
   "${packages[@]}" 3>&1 1>&2 2>&3 3>&-)
 
 clear
@@ -62,7 +63,7 @@ else
   fast-chroot /mnt pacman -S --noconfirm networkmanager networkmanager-openrc
 fi
 
-fast-chroot /mnt rc-update add networkmanager default
+fast-chroot /mnt rc-update add NetworkManager default
 
 clear
 echo "Определение видеокарты..."
@@ -85,12 +86,12 @@ elif echo "$gpu_info" | grep -qi "NVIDIA"; then
 
 elif echo "$gpu_info" | grep -qi "QXL"; then
     echo "Обнаружена виртуальная видеокарта QXL (QEMU)"
-    fast-chroot /mnt pacman -S --noconfirm xf86-video-qxl mesa qemu-guest-agent
+    fast-chroot /mnt pacman -S --noconfirm xf86-video-qxl mesa qemu-guest-agent qemu-guest-agent-openrc
     fast-chroot /mnt rc-update add qemu-guest-agent default
 
 elif echo "$gpu_info" | grep -qi "Virtio"; then
     echo "Обнаружена виртуальная видеокарта Virtio (QEMU/KVM)"
-    fast-chroot /mnt pacman -S --noconfirm xf86-video-virtio mesa qemu-guest-agent
+    fast-chroot /mnt pacman -S --noconfirm xf86-video-virtio mesa qemu-guest-agent qemu-guest-agent-openrc
     fast-chroot /mnt rc-update add qemu-guest-agent default
 
 else

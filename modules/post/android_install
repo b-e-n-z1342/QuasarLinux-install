@@ -1,5 +1,5 @@
 #!/bin/bash 
-
+set -euo pipefail
 waydroid() {
     sudo pacman -Syy
     sudo pacman -Suy

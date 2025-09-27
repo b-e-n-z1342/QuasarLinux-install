@@ -1,6 +1,6 @@
 #!/bin/bash
 audio="$1"
-
+set -euo pipefail
 pipewire_sound() {
     sudo pacman -S --noconfirm --overwrite '*' --needed pipewire lib32-libpipewire libpipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber pipewire-audio pipewire-openrc pipewire-pulse-openrc lib32-pipewire-jack
     

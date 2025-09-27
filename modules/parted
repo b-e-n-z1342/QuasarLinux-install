@@ -11,6 +11,39 @@ echo "======================="
 # Выбор раздела под корень /
 read -p "Введите раздел для ROOT (например, sda2): " ROOT_PART
 ROOT_PART="/dev/$ROOT_PART"
+[ ! -e "$ROOT_PART" ] && echo "Ошибка: $ROOT_PART не существует!" && exit 1
+format() {
+	ext() {
+		mkfs.ext4 -F "$ROOT_PART"
+	}
+
+	btrfs() {
+		mkfs.btrfs -f "$ROOT_PART"
+	}
+
+	xfs() {
+		mkfs.xfs -f -i size=512 "$ROOT_PART"
+	}
+
+	fs=$(dialog --title "Quasar-install" --menu "Выберите файловую систему: " 15 70 5 \
+	1 "ext4" \
+	2 "btrfs" \
+	3 "xfs" 3>&1 1>&2 2>&3 3>&-)
+	# Проверяем, не нажал ли пользователь Cancel или ESC
+	if [ $? -ne 0 ]; then
+	    echo "пропускаем"
+	fi
+
+	case $fs in
+		1) ext ;;
+		2) btrfs ;;
+		3) xfs ;;
+	esac
+	mount "$ROOT_PART" /mnt
+	clear
+}
+format
+
 lsblk -o NAME,SIZE,FSTYPE,MOUNTPOINT $DISK
 if [ $UEFI_MODE -eq 1 ]; then
     read -p "Введите раздел для EFI (например, sda1): " BOOT_PART
@@ -23,40 +56,10 @@ else
 fi
 
 # Проверка разделов
-[ ! -e "$ROOT_PART" ] && echo "Ошибка: $ROOT_PART не существует!" && exit 1
 [ ! -e "$BOOT_PART" ] && echo "Ошибка: $BOOT_PART не существует!" && exit 1
 
 
-format() {
-	ext() {
-		mkfs.ext4 -F "$ROOT_PART"
-	}
-	
-	btrfs() {
-		mkfs.btrfs -f "$ROOT_PART"
-	}
-	
-	xfs() {
-		mkfs.xfs -f -i size=512 "$ROOT_PART"
-	}
-	
-	fs=$(dialog --title "Quasar-install" --menu "Выберите файловую систему: " 15 70 5 \
-	1 "ext4" \
-	2 "btrfs" \
-	3 "xfs" 3>&1 1>&2 2>&3 3>&-)
-	# Проверяем, не нажал ли пользователь Cancel или ESC
-	if [ $? -ne 0 ]; then
-	    echo "пропускаем"    
-	fi
 
-	case $fs in
-		1) ext ;;
-		2) btrfs ;;
-		3) xfs ;;
-	esac
-	mount "$DISK" /mnt
-	clear
-}
 lsblk
 home_part() {
     read -p "Введите раздел для HOME (например, /dev/sda2): " HOME_PART
