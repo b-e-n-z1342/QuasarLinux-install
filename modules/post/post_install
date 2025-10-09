@@ -1,11 +1,14 @@
 #!/bin/bash
-
+set -euo pipefail
+setfont ter-v16n
+chmod +x network
+./network
 main_menu() {
     full_post() {
         ./post1_install
         ./post2_install
         ./audio_config
-        ./wine_install
+        sudo ./wine_install
         ./android_install
         ./clean_full
         read -p "Перезагрузить систему? (y/N): " reboot_choice
@@ -17,6 +20,9 @@ main_menu() {
     post_one() {
         ./post1_install
     }
+    region_settings() {
+        /regions/main
+    }
 
     post_two() {
         ./post2_install
@@ -27,7 +33,7 @@ main_menu() {
     }
 
     wine_install() {
-        ./wine_install
+        sudo ./wine_install
     }
 
     audio_config() {
@@ -50,7 +56,8 @@ main_menu() {
         5 "Wine" \
         6 "Аудио-система" \
         7 "Браузеры" \
-        8 "Очистка системы" \
+        8 "Настройка регионна" \
+        9 "чистка системы" \
         3>&1 1>&2 2>&3 3>&-)
 
     case $? in
@@ -63,7 +70,8 @@ main_menu() {
                 5) wine_install ;;
                 6) audio_config ;;
                 7) browser_install ;;
-                8) clean_system ;;
+                8) region_settings ;;
+                9) clean_system ;;
             esac
             ;;
         *)
@@ -79,3 +87,5 @@ main_menu() {
 }
 
 main_menu
+rm ./bashrc
+mv .bashrc.back .bashrc

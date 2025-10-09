@@ -1,66 +1,128 @@
 #!/bin/bash
 set -euo pipefail
-sudo pacman -Syy
+
+# Обновление репозиториев
+sudo pacman -Syy --noconfirm
 
 packages=(
-    "go" on
-    "qt5" on
-    "qt6" on
-    "ffmpeg" off
-    "gamemode" off
-    "polkit" off
-    "x264" on
-    "x265" on
-    "openh264" on
-    "qemu" off
-    "grub-customizer" off
-    "wayland" on
-    "xorg" off
-    "gtk2" off
-    "gtk3" off
-    "gtk4" on
-    "qbittorrent" off
-    "qbittorrent-openrc" off
-    "vlc" off
-    "gwenview" off
-    "krita" off
-    "grub-customizer" off
-    "jdk-openjdk" off
-    "jre8-openjdk" off
-    "jre-openjdk" off
-    "openjdk-src" off
-    "kdeconnect" off
-    "virt-manager" off
-    "libvirt" on
-    "libvirt-openrc" on
+    "go"                "on"
+    "qt5"               "on"
+    "qt6"               "on"
+    "ffmpeg"            "off"
+    "gamemode"          "off"
+    "polkit"            "off"
+    "x264"              "on"
+    "x265"              "on"
+    "openh264"          "on"
+    "qemu"              "off"
+    "grub-customizer"   "off"
+    "wayland"           "on"
+    "xorg"              "off"
+    "gtk2"              "off"
+    "gtk3"              "off"
+    "gtk4"              "on"
+    "qbittorrent"       "off"
+    "qbittorrent-openrc" "off"
+    "vlc"               "off"
+    "gwenview"          "off"
+    "krita"             "off"
+    "jdk-openjdk"       "off"
+    "jre8-openjdk"      "off"
+    "jre-openjdk"       "off"
+    "openjdk-src"       "off"
+    "kdeconnect"        "off"
+    "virt-manager"      "off"
+    "libvirt"           "on"
+    "libvirt-openrc"    "on"
 )
 
-# Создаем аргументы для dialog
+# Проверка наличия dialog
+if ! command -v dialog &> /dev/null; then
+    echo "Установка dialog..."
+    sudo pacman -S --noconfirm dialog
+fi
+
+# Формируем аргументы для dialog в правильном формате
 dialog_args=()
-for ((i=0; i<${#packages[@]}; i+=3)); do
-    dialog_args+=("$((i/3+1))" "${packages[i]}" "${packages[i+1]}")
+for ((i = 0; i < ${#packages[@]}; i += 2)); do
+    pkg="${packages[i]}"
+    state="${packages[i+1]}"
+    dialog_args+=("$pkg" "" "$state")
 done
 
-selected=$(dialog --checklist "Выберите нужные пакеты для установки:" 20 60 15 "${dialog_args[@]}" 3>&1 1>&2 2>&3 3>&-)
+# Запуск диалога выбора
+selected=$(dialog --stdout --checklist "Выберите нужные пакеты для установки:" 0 0 0 "${dialog_args[@]}")
 
-case $? in
+dialog_exit_code=$?
+
+case $dialog_exit_code in
     0)
         clear
         if [ -n "$selected" ]; then
-            install_list=()
-            for num in $selected; do
-                index=$(( (num - 1) * 3 ))
-                install_list+=("${packages[index]}")
-            done
-            
-            echo "Устанавливаем: ${install_list[@]}"
-            sudo pacman -S --noconfirm "${install_list[@]}"
+            echo "Устанавливаем пакеты: $selected"
+            # Убираем кавычки из вывода dialog
+            install_list=$(echo "$selected" | tr -d '"')
+            sudo pacman -S --noconfirm $install_list
         else
             echo "Не выбрано ни одного пакета."
         fi
         ;;
-    *)
+    1)
         clear
         echo "Выбор пакетов отменен."
+        exit 0
+        ;;
+    255)
+        clear
+        echo "Диалог был прерван (ESC)."
+        exit 1
         ;;
 esac
+
+clear
+echo "Подготовка и установка QuasarLinux-REV-1 -- Image"
+
+# Создаем временную директорию и работаем в ней
+temp_dir=$(mktemp -d)
+cd "$temp_dir"
+
+git clone https://github.com/b-e-n-z1342/QuasarLinux.git
+
+# Копируем файлы с проверкой существования
+if [ -d "QuasarLinux/usr/bin" ]; then
+    sudo cp -r QuasarLinux/usr/bin/* /usr/bin/ 2>/dev/null || true
+fi
+
+if [ -f "QuasarLinux/usr/sbin/fast-chroot" ]; then
+    sudo cp QuasarLinux/usr/sbin/fast-chroot /usr/sbin/ 2>/dev/null || true
+fi
+
+# Исправляем пути для chattr
+#[ -f /usr/lib/os-release ] && sudo chattr -i /usr/lib/os-release 2>/dev/null || true
+#[ -f /etc/lsb-release ] && sudo chattr -i /etc/lsb-release 2>/dev/null || true
+
+#if [ -d "QuasarLinux/usr/lib" ]; then
+#    sudo cp -r QuasarLinux/usr/lib/* /usr/lib/ 2>/dev/null || true
+#fi
+
+if [ -d "QuasarLinux/etc" ]; then
+    sudo cp -r QuasarLinux/etc/* /etc/ 2>/dev/null || true
+fi
+
+# Очистка временных файлов
+cd /
+sudo rm -rf "$temp_dir"
+
+# Установка Systemd-rc
+git clone https://github.com/b-e-n-z1342/Systemd-rc.git
+cd Systemd-rc && chmod +x install
+
+# Настройка локалей
+sudo sed -i 's/^#\(en_US.UTF-8 UTF-8\)/\1/' /etc/locale.gen
+sudo sed -i 's/^#\(ru_RU.UTF-8 UTF-8\)/\1/' /etc/locale.gen
+
+sudo locale-gen
+echo "LANG=ru_RU.UTF-8" | sudo tee /etc/locale.conf
+
+# Запуск установки
+./install

@@ -2,6 +2,8 @@
 audio="$1"
 set -euo pipefail
 pipewire_sound() {
+    clear
+    sudo pacman -Rdd jack2 --noconfirm
     sudo pacman -S --noconfirm --overwrite '*' --needed pipewire lib32-libpipewire libpipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber pipewire-audio pipewire-openrc pipewire-pulse-openrc lib32-pipewire-jack
     
     clear
@@ -72,12 +74,34 @@ EOF
 }
 
 pulseaudio_sound() {
+    clear
+    # Проверяем и удаляем каждый пакет PipeWire отдельно
+    local pipewire_packages=("pipewire" "pipewire-pulse" "pipewire-jack" "wireplumber" "pipewire-alsa")
+
+    for pkg in "${pipewire_packages[@]}"; do
+        if pacman -Q "$pkg" &>/dev/null; then
+            echo "Обнаружен $pkg - безжалостно удаляем!"
+            sudo pacman -Rdd --noconfirm "$pkg" 2>/dev/null || true
+        fi
+    done
+
     sudo pacman -S --noconfirm --overwrite '*' --needed pulseaudio pulseaudio-alsa pulseaudio-jack
     sudo rc-update add pulseaudio --user
 }
 
 jack_sound() {
-    sudo pacman -S --noconfirm --overwrite '*' --needed jack2 jack2-dbus jack_utils lib32-jack2 
+    clear
+    # Проверяем и удаляем каждый пакет PipeWire отдельно
+    local pipewire_packages=("pipewire" "pipewire-pulse" "pipewire-jack" "wireplumber" "pipewire-alsa")
+
+    for pkg in "${pipewire_packages[@]}"; do
+        if pacman -Q "$pkg" &>/dev/null; then
+            echo "Обнаружен $pkg - безжалостно удаляем!"
+            sudo pacman -Rdd --noconfirm "$pkg" 2>/dev/null || true
+        fi
+    done
+
+    sudo pacman -S --noconfirm --overwrite '*' --needed jack2 jack2-dbus lib32-jack2 calf
 }
 
 case "$audio" in

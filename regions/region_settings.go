@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 )
+
 func main() {
 	fmt.Println("Выберите регион:")
-	
+
 	fmt.Println("1)  Северная Америка")
 	fmt.Println("2)  Европа")
 	fmt.Println("3)  Азия")
@@ -17,49 +19,52 @@ func main() {
 	fmt.Println("8)  Австралия")
 	fmt.Println("9)  Бразилия")
 	fmt.Println("10) Канада")
-	fmt.Println("11) Etc")	
-	fmt.Println("Выберите [1-11]:  ")
+	fmt.Println("11) Etc")
+	fmt.Print("Выберите [1-11]: ")
+
 	var choice int
-	fmt.Scan(&choice)
-
-
-	switch choice {
-	case 1:
-		exec.Command("./region", "US").Run()
-	case 2:
-		exec.Command("./region", "Europe").Run()
-	case 3: 
-		exec.Command("./region", "Asia").Run()
-	case 4:
-		exec.Command("./region", "Africa").Run()
-	case 5:
-		exec.Command("./region", "Antarctica").Run()
-	case 6:
-		exec.Command("./region", "Arctica").Run()
-	case 7:
-		exec.Command("./region", "Atlantic").Run()
-	case 8:
-		exec.Command("./region", "Australia").Run()
-	case 9:
-		exec.Command("./region", "Brazil").Run()
-	case 10:
-		exec.Command("./region", "Canada").Run()
-	case 11:
-		exec.Command("./region", "Etc").Run()
-		
-	default:
-		fmt.Println("Неверный выбор!")
-	}
-}
-
-func runCommand(command string, args ...string) {
-	cmd := exec.Command(command, args...)
-	output, err := cmd.CombinedOutput()
-
+	_, err := fmt.Scan(&choice)
 	if err != nil {
-		fmt.Println("Ошибка: %v\n", err)
+		fmt.Println("Ошибка ввода")
 		return
 	}
-	runCommand("clear")
-	fmt.Println("Результат:\n%s\n", output)
+
+	var region string
+	switch choice {
+		case 1:
+			region = "US"
+		case 2:
+			region = "Europe"
+		case 3:
+			region = "Asia"
+		case 4:
+			region = "Africa"
+		case 5:
+			region = "Antarctica"
+		case 6:
+			region = "Arctic"   // ← исправлено: Arctic, не Arctica!
+		case 7:
+			region = "Atlantic"
+		case 8:
+			region = "Australia"
+		case 9:
+			region = "Brazil"
+		case 10:
+			region = "Canada"
+		case 11:
+			region = "Etc"
+		default:
+			fmt.Println("Неверный выбор!")
+			return
+	}
+
+	// Запускаем ./region с полным доступом к терминалу
+	cmd := exec.Command("./region", region)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		fmt.Printf("Ошибка: %v\n", err)
+	}
 }

@@ -3,19 +3,19 @@ set -euo pipefail
 
 linux_zen_base() {
     clear
-    basestrap /mnt terminus-font linux-zen base base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-zen-headers dialog acpid linux-api-headers flatpak acpid-openrc
+    basestrap /mnt terminus-font linux-zen base iptables-nft base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-zen-headers dialog acpid linux-api-headers flatpak acpid-openrc
     fast-chroot /mnt flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 }
 
 linux_lts_base() {
     clear
-    basestrap /mnt terminus-font linux-lts base base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-lts-headers dialog acpid linux-api-headers flatpak acpid-openrc
+    basestrap /mnt terminus-font linux-lts base iptables-nft base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-lts-headers dialog acpid linux-api-headers flatpak acpid-openrc
     fast-chroot /mnt flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 }
 
 linux_base() {
     clear
-    basestrap /mnt terminus-font linux base base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-headers dialog acpid linux-api-headers flatpak acpid-openrc
+    basestrap /mnt terminus-font linux base iptables-nft base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-headers dialog acpid linux-api-headers flatpak acpid-openrc
     fast-chroot /mnt flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 }
 
@@ -48,8 +48,8 @@ PRETTY_NAME="Quasar Linux (Artix base)"
 ID=quasar
 ID_LIKE=artix
 ANACONDA_ID="quasar"
-VERSION="REV-0.6"
-VERSION_ID="0.6"
+VERSION="REV-1"
+VERSION_ID="1.0"
 BUILD_ID="rolling"
 ANSI_COLOR="0;36"
 HOME_URL="https://b-e-n-z1342.github.io"
@@ -58,7 +58,7 @@ OS_EOF
 
 cat > /mnt/etc/lsb-release << 'LSB_EOF'
 DISTRIB_ID=Quasar
-DISTRIB_RELEASE=0.6
+DISTRIB_RELEASE=1.0
 DISTRIB_DESCRIPTION="Quasar Linux"
 DISTRIB_CODENAME=rolling
 LSB_EOF

@@ -3,7 +3,7 @@ set -euo pipefail
 de="$1"
 
 plasma() {
-    sudo pacman -S plasma konsole dolphin kate gwenview sddm sddm-openrc kcalc vlc --noconfirm
+    sudo pacman -S plasma konsole dolphin kate gwenview sddm sddm-openrc kcalc vlc wayland seatd ark --noconfirm
     sleep 1
     sudo pacman -Rns discover --noconfirm 2>/dev/null || true
     
@@ -13,7 +13,8 @@ plasma() {
     sudo mkdir -p /var/lib/sddm /var/run/sddm
     sudo chown sddm:sddm /var/lib/sddm /var/run/sddm
     sudo chmod 0755 /var/lib/sddm /var/run/sddm
-    sudo usermod -aG seat,video,input sddm
+    sudo usermod -aG seat,video,input sddm || echo "Error 1"
+    sudo usermod -aG video,input sddm || echo "Error 2"
     sudo pacman -S --noconfirm plasma-localization-ru kde-l10n-ru
     sudo rc-update add sddm default
 }
@@ -34,7 +35,7 @@ lxde() {
 }
 
 gnome() {
-    sudo pacman -S --needed --noconfirm gnome-shell gnome nautilus gnome-control-center gnome-terminal 
+    sudo pacman -S --needed --noconfirm gnome-shell gnome nautilus gnome-control-center gnome-terminal wayland seatd
     sudo pacman -S --needed gdm gdm-openrc --noconfirm
     sudo rc-update add gdm default
 }

@@ -27,15 +27,22 @@ if [ "$UEFI_MODE" -eq 1 ]; then
         echo "Установка EFISTUB..."
         fast-chroot /mnt pacman -S efibootmgr os-prober --noconfirm
         fast-chroot /mnt efibootmgr -b 0000 -B 2>/dev/null || true
-        fast-chroot /mnt cp /boot/vmlinuz-linux /boot/efi/vmlinuz-linux.efi 2>/dev/null || \
-        fast-chroot /mnt cp /boot/vmlinuz-linux-zen /boot/efi/vmlinuz-linux-zen.efi 2>/dev/null || \
-        fast-chroot /mnt cp /boot/vmlinuz-linux-lts /boot/efi/vmlinuz-linux-lts.efi
-        
-        fast-chroot /mnt cp /boot/initramfs-linux.img /boot/efi/initramfs-linux.img 2>/dev/null || \
-        fast-chroot /mnt cp /boot/initramfs-linux-zen.img /boot/efi/initramfs-linux-zen.img 2>/dev/null || \
-        fast-chroot /mnt cp /boot/initramfs-linux-lts.img /boot/efi/initramfs-linux-lts.img
-        
-        fast-chroot /mnt efibootmgr -c -d "$DISK" -p 1 -L "QuasarLinux" -l '\vmlinuz-linux.efi' -u "root=UUID=$ROOT_UUID rw initrd=\initramfs-linux.img"
+        KERNEL=""
+        INITRAMFS=""
+        if fast-chroot /mnt test -f /boot/vmlinuz-linux; then
+            KERNEL="linux"
+        elif fast-chroot /mnt test -f /boot/vmlinuz-linux-zen; then
+            KERNEL="linux-zen"
+        elif fast-chroot /mnt test -f /boot/vmlinuz-linux-lts; then
+            KERNEL="linux-lts"
+        elsefast-chroot /mnt efibootmgr -c -d "$DISK" -p 1 -L "QuasarLinux" -l '\vmlinuz-linux.efi' -u "root=UUID=$ROOT_UUID rw initrd=\initramfs-linux.img"
+            echo "Ошибка: не найдено ни одно ядро (linux, linux-zen, linux-lts)"
+            exit 1
+        fi
+        cp "/mnt/boot/vmlinuz-$KERNEL" "/mnt/boot/efi/vmlinuz-$KERNEL.efi"
+        cp "/mnt/boot/initramfs-$KERNEL.img" "/mnt/boot/efi/initramfs-$KERNEL.img"
+
+        fast-chroot /mnt efibootmgr -c -d "$DISK" -p 1 -L "QuasarLinux" -l "\\vmlinuz-$KERNEL.efi"  -u "root=UUID=$ROOT_UUID rw initrd=\\initramfs-$KERNEL.img"
         echo "EFISTUB настроен"
     }
     
