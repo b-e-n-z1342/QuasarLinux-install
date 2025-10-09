@@ -12,8 +12,10 @@ which mkfs.fat || pacman -S dosfstools
 setfont ter-v16n || pacman -S terminus-font & setfont ter-16n
 echo "подготовка"
 pacman-key --init
-pacman-key --populate artixlinux
+pacman-key --populate artixlinux || echo ""
+pacman-key --populate artix
 pacman-key --refresh-keys
+
 
 clear
 echo "Установка QuasarLinux REV-1"

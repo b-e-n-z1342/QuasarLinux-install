@@ -3,19 +3,19 @@ set -euo pipefail
 
 linux_zen_base() {
     clear
-    basestrap /mnt terminus-font linux-zen base iptables-nft base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-zen-headers dialog acpid linux-api-headers flatpak acpid-openrc
+    basestrap /mnt terminus-font iptables-nft linux-zen base base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-zen-headers dialog acpid linux-api-headers flatpak acpid-openrc
     fast-chroot /mnt flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 }
 
 linux_lts_base() {
     clear
-    basestrap /mnt terminus-font linux-lts base iptables-nft base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-lts-headers dialog acpid linux-api-headers flatpak acpid-openrc
+    basestrap /mnt terminus-font iptables-nft linux-lts base base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-lts-headers dialog acpid linux-api-headers flatpak acpid-openrc
     fast-chroot /mnt flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 }
 
 linux_base() {
     clear
-    basestrap /mnt terminus-font linux base iptables-nft base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-headers dialog acpid linux-api-headers flatpak acpid-openrc
+    basestrap /mnt terminus-font iptables-nft linux base base-devel mkinitcpio openrc dbus dbus-openrc elogind-openrc linux-firmware linux-headers dialog acpid linux-api-headers flatpak acpid-openrc
     fast-chroot /mnt flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 }
 
@@ -182,7 +182,12 @@ if [ -f /installer/configs/pacman.conf ]; then
 else
     echo "Предупреждение: pacman.conf не найден"
 fi
-
+if [ -f /installer/configs/pacman.d/mirrorlist ]; then
+    rm /mnt/etc/pacman.d/mirrorlist
+    cp /installer/configs/pacman.d/mirrorlist /mnt/etc/pacman.d/
+else
+    echo "Предупреждение: pacman.d не найден"
+fi
 #########################################################################################
 # Копирование post-инсталляционных скриптов
 if [ -d /installer/post ]; then
@@ -212,11 +217,9 @@ ln -sf /usr/lib/os-release /mnt/etc/os-release 2>/dev/null || true
 
 ###########################################################################################
 # полная смена названия
-#!/bin/sh
 # Устанавливает бренд "QuasarLinux" в OpenRC целевой системы
 # Предназначен для запуска из установщика (целевая ФС смонтирована в /mnt)
 
-set -e
 
 TARGET_ROOT="/mnt"
 OPENRC_BIN="${TARGET_ROOT}/sbin/openrc"
@@ -265,5 +268,30 @@ echo "$matches" | while IFS=: read -r offset rest; do
 done
 
 echo "Брендирование завершено: OpenRC теперь говорит '$NEW_NAME' при загрузке."
-
+###################################
+#
+#       Пост установка
+#
+#####################################
+cat >> /mnt/usr/local/bin/post_install << EOF
+#!/bin/bash
+git_post() {
+    git clone https://github.com/b-e-n-z1342/QuasarLinux-install.git
+    cp -r QuasarLinux-install/modules/post  ~/\
+    sudo cp -r QuasarLinux-install/regions /
+    rm -rf QuasarLinux-install
+    cd ~/post
+    ./post_install
+}
+cd /post
+## ./network
+./post_install || git_post
+EOF
+chmod +x /mnt/usr/local/bin/post_install
+cat >> /mnt/root/.bashrc << 'EOF'
+if grep -q "post_install &&" /mnt/root/.bashrc && ! grep -q "^#.*post_install &&" /mnt/root/.bashrc; then
+    post_install && sed -i '/post_install &&/s/^/# /' /mnt/root/.bashrc
+fi
+EOF
+#
 echo "Базовая установка завершена!"
