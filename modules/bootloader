@@ -100,7 +100,7 @@ else
         cp /mnt/usr/lib/syslinux/bios/*.c32 /mnt/boot/syslinux/
         fast-chroot /mnt dd if=/usr/lib/syslinux/bios/mbr.bin of="$DISK" bs=440 count=1 conv=notrunc
         
-        cat > /mnt/boot/syslinux/syslinux.cfg << 'EOFD'
+        cat > /mnt/boot/syslinux/syslinux.cfg << EOFD
 DEFAULT Quasarlinux
 PROMPT 0
 TIMEOUT 50
