@@ -1,6 +1,0 @@
-##
-## Artix Linux repository mirrorlist
-## Generated on 2025-03-26
-##
-Server = https://ftp.sh.cvut.cz/artix-linux/$repo/os/$arch
-

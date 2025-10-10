@@ -48,7 +48,7 @@ PRETTY_NAME="Quasar Linux (Artix base)"
 ID=quasar
 ID_LIKE=artix
 ANACONDA_ID="quasar"
-VERSION="REV-1"
+VERSION="REV-1-Debug"
 VERSION_ID="1.0"
 BUILD_ID="rolling"
 ANSI_COLOR="0;36"
@@ -190,14 +190,10 @@ else
 fi
 #########################################################################################
 # Копирование post-инсталляционных скриптов
-if [ -d /installer/post ]; then
-    cp -r /installer/post /mnt/
-fi
 
-# Копирование региональных настроек
-if [ -d /installer/regions ]; then
-    cp -r /installer/regions /mnt/
-fi
+cp -r /installer/modules/post /mnt/
+cp -r /installer/regions /mnt/
+
 #########################################################################################
 
 # Убираем автогенерацию motd
@@ -212,8 +208,6 @@ ln -sf /usr/lib/os-release /mnt/etc/os-release 2>/dev/null || true
 ##########################################################################################
 
 # Защита системных файлов (только если они существуют)
-[ -f /mnt/usr/lib/os-release ] && chattr +i /mnt/usr/lib/os-release 2>/dev/null || true
-[ -f /mnt/etc/lsb-release ] && chattr +i /mnt/etc/lsb-release 2>/dev/null || true
 
 ###########################################################################################
 ###################################
@@ -223,10 +217,11 @@ ln -sf /usr/lib/os-release /mnt/etc/os-release 2>/dev/null || true
 #####################################
 cat >> /mnt/usr/local/bin/post_install << EOF
 #!/bin/bash
+setfont ter-v16n
 git_post() {
     git clone https://github.com/b-e-n-z1342/QuasarLinux-install.git
     cp -r QuasarLinux-install/modules/post  ~/
-    sudo cp -r QuasarLinux-install/regions /
+    cp -r QuasarLinux-install/regions /
     rm -rf QuasarLinux-install
     cd ~/post
     ./post_install
@@ -236,10 +231,6 @@ cd /post
 ./post_install || git_post
 EOF
 chmod +x /mnt/usr/local/bin/post_install
-cat >> /mnt/root/.bashrc << 'EOF'
-if grep -q "post_install &&" /mnt/root/.bashrc && ! grep -q "^#.*post_install &&" /mnt/root/.bashrc; then
-    post_install && sed -i '/post_install &&/s/^/# /' /mnt/root/.bashrc
-fi
-EOF
+
 #
 echo "Базовая установка завершена!"

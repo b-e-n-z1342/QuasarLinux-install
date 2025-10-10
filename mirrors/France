@@ -1,4 +1,0 @@
-Server = https://artix.toret.fr/$repo/os/$arch
-Server = https://ftp.crifo.org/artix/repos/$repo/os/$arch
-Server = https://mirror.opensrv.org/artixlinux/$repo/os/$arch
-

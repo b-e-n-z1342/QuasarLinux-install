@@ -1,7 +1,0 @@
-Server = https://artix.wheaton.edu/repos/$repo/os/$arch
-Server = https://mirror.clarkson.edu/artix-linux/repos/$repo/os/$arch
-Server = https://mirrors.rit.edu/artixlinux/$repo/os/$arch
-Server = https://mirrors.ocf.berkeley.edu/artix-linux/$repo/os/$arch
-Server = http://www.nylxs.com/mirror/repos/$repo/os/$arch
-Server = https://gnlug.org/pub/artix-linux/$repo/os/$arch
-

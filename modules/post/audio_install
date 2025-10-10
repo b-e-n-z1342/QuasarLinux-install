@@ -1,27 +1,36 @@
 #!/bin/bash
 audio="$1"
 set -euo pipefail
+
+get_username() {
+    # Безопасное получение имени пользователя
+    if [ -n "$SUDO_USER" ]; then
+        echo "$SUDO_USER"
+    elif [ -n "$USER" ]; then
+        echo "$USER"
+    else
+        whoami
+    fi
+}
+
 pipewire_sound() {
     clear
-    sudo pacman -Rdd jack2 --noconfirm
-    sudo pacman -S --noconfirm --overwrite '*' --needed pipewire lib32-libpipewire libpipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber pipewire-audio pipewire-openrc pipewire-pulse-openrc lib32-pipewire-jack
-    
+    echo "Установка PipeWire..."
+
+    # Удаляем конфликтующие пакеты
+    sudo pacman -Rdd jack2 --noconfirm 2>/dev/null || true
+
+    # Безопасная установка PipeWire
+    sudo pacman -S --noconfirm --needed \
+        pipewire lib32-pipewire \
+        pipewire-alsa pipewire-pulse pipewire-jack \
+        wireplumber pipewire-audio \
+        pipewire-openrc pipewire-pulse-openrc
+
     clear
-    
+
+    # Создаем службы OpenRC
     sudo mkdir -p /etc/init.d
-    sudo tee /etc/init.d/wireplumber > /dev/null << 'EOF'
-#!/sbin/openrc-run
-
-command="/usr/bin/wireplumber"
-command_args=""
-pidfile="/run/${RC_SVCNAME}.pid"
-
-depend() {
-    need pipewire
-    need dbus
-    need elogind
-}
-EOF
 
     sudo tee /etc/init.d/pipewire > /dev/null << 'EOF'
 #!/sbin/openrc-run
@@ -33,80 +42,137 @@ pidfile="/run/${RC_SVCNAME}.pid"
 depend() {
     need dbus
     need elogind
+    after dbus
+    after elogind
 }
 EOF
 
+    sudo tee /etc/init.d/wireplumber > /dev/null << 'EOF'
+#!/sbin/openrc-run
+
+command="/usr/bin/wireplumber"
+command_args=""
+pidfile="/run/${RC_SVCNAME}.pid"
+
+depend() {
+    need pipewire
+    need dbus
+    need elogind
+    after pipewire
+}
+EOF
+
+    # Универсальный конфиг ALSA
     sudo tee /etc/asound.conf > /dev/null << 'EOF'
+defaults.pcm.card 0
+defaults.ctl.card 0
+
 pcm.!default {
-    type hw
-    card 0
+    type plug
+    slave.pcm {
+        type pipewire
+    }
 }
 
 ctl.!default {
-    type hw
-    card 0
+    type pipewire
 }
 EOF
 
+    # Пользовательский конфиг
     tee ~/.asoundrc > /dev/null << 'EOF'
 pcm.!default {
     type plug
     slave.pcm "pipewire"
 }
 
-pcm.pipewire {
-    type pipewire
-    playback_ports [ "alsa_output.pci-0000_00_1f.3.analog-stereo" ]
-    capture_ports  [ "alsa_input.pci-0000_00_1f.3.analog-stereo" ]
-}
-
 ctl.!default {
     type pipewire
 }
 EOF
 
-    sudo pacman -S pavucontrol --noconfirm
+    # Дополнительные утилиты
+    sudo pacman -S --noconfirm pavucontrol
+
+    # Права и службы
     sudo chmod +x /etc/init.d/pipewire
     sudo chmod +x /etc/init.d/wireplumber
     sudo rc-update add pipewire default
-    sudo rc-update add pipewire-pulse default
-    sudo usermod -aG audio $USER
+    sudo rc-update add wireplumber default
+
+    local username=$(get_username)
+    sudo usermod -aG audio "$username"
+
+    echo "PipeWire установлен и настроен"
 }
 
 pulseaudio_sound() {
     clear
-    # Проверяем и удаляем каждый пакет PipeWire отдельно
-    local pipewire_packages=("pipewire" "pipewire-pulse" "pipewire-jack" "wireplumber" "pipewire-alsa")
+    echo "Установка PulseAudio..."
+
+    # Аккуратно удаляем PipeWire пакеты
+    local pipewire_packages=(
+        "pipewire" "pipewire-pulse" "pipewire-jack"
+        "wireplumber" "pipewire-alsa" "lib32-pipewire"
+    )
 
     for pkg in "${pipewire_packages[@]}"; do
         if pacman -Q "$pkg" &>/dev/null; then
-            echo "Обнаружен $pkg - безжалостно удаляем!"
+            echo "Удаляем $pkg"
             sudo pacman -Rdd --noconfirm "$pkg" 2>/dev/null || true
         fi
     done
 
-    sudo pacman -S --noconfirm --overwrite '*' --needed pulseaudio pulseaudio-bluetooth pulseaudio-alsa pulseaudio-jack
-    sudo rc-update add pulseaudio --user
+    # Устанавливаем PulseAudio
+    sudo pacman -S --noconfirm --needed \
+        pulseaudio pulseaudio-alsa \
+        pulseaudio-bluetooth pulseaudio-jack
+
+    # Настройка службы
+    if [ -d /etc/init.d ]; then
+        sudo rc-update add pulseaudio default 2>/dev/null || true
+    fi
+
+    echo "PulseAudio установлен"
 }
 
 jack_sound() {
     clear
-    # Проверяем и удаляем каждый пакет PipeWire отдельно
-    local pipewire_packages=("pipewire" "pipewire-pulse" "pipewire-jack" "wireplumber" "pipewire-alsa")
+    echo "Установка JACK2..."
+
+    # Удаляем PipeWire
+    local pipewire_packages=(
+        "pipewire" "pipewire-pulse" "pipewire-jack"
+        "wireplumber" "pipewire-alsa" "lib32-pipewire"
+    )
 
     for pkg in "${pipewire_packages[@]}"; do
         if pacman -Q "$pkg" &>/dev/null; then
-            echo "Обнаружен $pkg - безжалостно удаляем!"
+            echo "Удаляем $pkg"
             sudo pacman -Rdd --noconfirm "$pkg" 2>/dev/null || true
         fi
     done
 
-    sudo pacman -S --noconfirm --overwrite '*' --needed jack2 jack2-dbus lib32-jack2 calf
+    # Устанавливаем JACK
+    sudo pacman -S --noconfirm --needed \
+        jack2 jack2-dbus lib32-jack2 calf
+
+    echo "JACK2 установлен"
 }
+
+# Проверка аргументов
+if [ -z "$audio" ]; then
+    echo "Использование: $0 {pipewire|pulseaudio|jack}"
+    exit 1
+fi
 
 case "$audio" in
     pipewire) pipewire_sound ;;
     pulseaudio) pulseaudio_sound ;;
     jack) jack_sound ;;
-    *) echo "Неизвестный звуковой сервер: $audio" ;;
+    *)
+        echo "Неизвестный звуковой сервер: $audio"
+        echo "Доступные варианты: pipewire, pulseaudio, jack"
+        exit 1
+        ;;
 esac

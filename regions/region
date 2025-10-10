@@ -12,7 +12,7 @@ Europe() {
     done
 
     # Вызываем dialog с checklist
-    selected=$(dialog --stdout --radiolist "Выберите регионы:" 20 40 10 \
+    selected=$(dialog --stdout --radiolist "Выберите регионы:" 30 40 10 \
       "${checklist_items[@]}")
 
     clear
@@ -29,7 +29,7 @@ Asia() {
     done
 
     # Вызываем dialog с checklist
-    selected=$(dialog --stdout --radiolist "Выберите регионы:" 20 40 10 \
+    selected=$(dialog --stdout --radiolist "Выберите регионы:" 30 40 10 \
       "${checklist_items[@]}")
 
     clear
@@ -45,7 +45,7 @@ US() {
     done
 
     # Вызываем dialog с checklist
-    selected=$(dialog --stdout --radiolist "Выберите регионы:" 20 40 10 \
+    selected=$(dialog --stdout --radiolist "Выберите регионы:" 30 40 10 \
       "${checklist_items[@]}")
 
     clear
@@ -62,7 +62,7 @@ Africa() {
     done
 
     # Вызываем dialog с checklist
-    selected=$(dialog --stdout --radiolist "Выберите регионы:" 20 40 10 \
+    selected=$(dialog --stdout --radiolist "Выберите регионы:" 30 40 10 \
       "${checklist_items[@]}")
 
     clear
@@ -78,7 +78,7 @@ Antarctica() {
     done
 
     # Вызываем dialog с checklist
-    selected=$(dialog --stdout --radiolist "Выберите регионы:" 20 40 10 \
+    selected=$(dialog --stdout --radiolist "Выберите регионы:" 30 40 10 \
       "${checklist_items[@]}")
 
     clear
@@ -95,7 +95,7 @@ Arctic() {
     done
 
     # Вызываем dialog с checklist
-    selected=$(dialog --stdout --radiolist "Выберите регионы:" 20 40 10 \
+    selected=$(dialog --stdout --radiolist "Выберите регионы:" 30 40 10 \
       "${checklist_items[@]}")
 
     clear
@@ -112,7 +112,7 @@ Atlantic() {
     done
 
     # Вызываем dialog с checklist
-    selected=$(dialog --stdout --radiolist "Выберите регионы:" 20 40 10 \
+    selected=$(dialog --stdout --radiolist "Выберите регионы:" 30 40 10 \
       "${checklist_items[@]}")
 
     clear
@@ -129,7 +129,7 @@ Australia() {
     done
 
     # Вызываем dialog с checklist
-    selected=$(dialog --stdout --radiolist "Выберите регионы:" 20 40 10 \
+    selected=$(dialog --stdout --radiolist "Выберите регионы:" 30 40 10 \
       "${checklist_items[@]}")
 
     clear
@@ -146,7 +146,7 @@ Brazil() {
     done
 
     # Вызываем dialog с checklist
-    selected=$(dialog --stdout --radiolist "Выберите регионы:" 20 40 10 \
+    selected=$(dialog --stdout --radiolist "Выберите регионы:" 30 40 10 \
       "${checklist_items[@]}")
 
     clear
@@ -163,7 +163,7 @@ Canada() {
     done
 
     # Вызываем dialog с checklist
-    selected=$(dialog --stdout --radiolist "Выберите регионы:" 20 40 10 \
+    selected=$(dialog --stdout --radiolist "Выберите регионы:" 30 40 10 \
       "${checklist_items[@]}")
 
     clear
@@ -180,7 +180,7 @@ Etc() {
     done
 
     # Вызываем dialog с checklist
-    selected=$(dialog --stdout --radiolist "Выберите регионы:" 20 40 10 \
+    selected=$(dialog --stdout --radiolist "Выберите регионы:" 30 40 10 \
       "${checklist_items[@]}")
 
     clear

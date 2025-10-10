@@ -1,3 +1,0 @@
-Server = https://ftp.cc.uoc.gr/mirrors/linux/artixlinux/$repo/os/$arch
-Server = http://ftp.ntua.gr/pub/linux/artix-linux/$repo/os/$arch
-
