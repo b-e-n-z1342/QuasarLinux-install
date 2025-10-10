@@ -216,58 +216,6 @@ ln -sf /usr/lib/os-release /mnt/etc/os-release 2>/dev/null || true
 [ -f /mnt/etc/lsb-release ] && chattr +i /mnt/etc/lsb-release 2>/dev/null || true
 
 ###########################################################################################
-# полная смена названия
-# Устанавливает бренд "QuasarLinux" в OpenRC целевой системы
-# Предназначен для запуска из установщика (целевая ФС смонтирована в /mnt)
-
-
-TARGET_ROOT="/mnt"
-OPENRC_BIN="${TARGET_ROOT}/sbin/openrc"
-
-OLD_NAME="Artix Linux"
-NEW_NAME="QuasarLinux"
-
-# Проверка длины — критически важно!
-if [ ${#OLD_NAME} -ne ${#NEW_NAME} ]; then
-    echo "ОШИБКА: длина '$OLD_NAME' (${#OLD_NAME}) != '$NEW_NAME' (${#NEW_NAME})"
-    echo "   Замена отменена — возможна порча бинарника!"
-    exit 1
-fi
-
-# Проверяем, существует ли openrc в целевой системе
-if [ ! -f "$OPENRC_BIN" ]; then
-    echo "- $OPENRC_BIN не найден. Пропуск брендирования."
-    exit 0
-fi
-
-echo "Поиск '$OLD_NAME' в $OPENRC_BIN..."
-
-# Ищем все вхождения
-matches=$(grep -a -b "$OLD_NAME" "$OPENRC_BIN" 2>/dev/null || true)
-
-if [ -z "$matches" ]; then
-    echo "+ '$OLD_NAME' не найден — возможно, уже заменён или используется другой дистрибутив."
-    exit 0
-fi
-
-# Создаём бэкап (только если его ещё нет)
-BACKUP="${OPENRC_BIN}.quasar.bak"
-if [ ! -f "$BACKUP" ]; then
-    echo "Создаю бэкап: ${BACKUP##*/}"
-    cp "$OPENRC_BIN" "$BACKUP"
-fi
-
-# Заменяем каждое вхождение
-echo "Замена на '$NEW_NAME'..."
-echo "$matches" | while IFS=: read -r offset rest; do
-    if [ -n "$offset" ]; then
-        # Записываем новую строку + нулевой байт (ровно столько же байт, сколько было)
-        printf '%s\0' "$NEW_NAME" | dd of="$OPENRC_BIN" bs=1 seek="$offset" conv=notrunc 2>/dev/null
-        echo "   → Позиция $offset обновлена"
-    fi
-done
-
-echo "Брендирование завершено: OpenRC теперь говорит '$NEW_NAME' при загрузке."
 ###################################
 #
 #       Пост установка
@@ -277,7 +225,7 @@ cat >> /mnt/usr/local/bin/post_install << EOF
 #!/bin/bash
 git_post() {
     git clone https://github.com/b-e-n-z1342/QuasarLinux-install.git
-    cp -r QuasarLinux-install/modules/post  ~/\
+    cp -r QuasarLinux-install/modules/post  ~/
     sudo cp -r QuasarLinux-install/regions /
     rm -rf QuasarLinux-install
     cd ~/post

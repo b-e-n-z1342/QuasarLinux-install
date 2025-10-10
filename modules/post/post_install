@@ -8,7 +8,7 @@ main_menu() {
         ./post1_install
         ./post2_install
         ./audio_config
-        sudo ./wine_install
+        ./wine_install
         ./android_install
         ./clean_full
         read -p "Перезагрузить систему? (y/N): " reboot_choice
@@ -21,7 +21,7 @@ main_menu() {
         ./post1_install
     }
     region_settings() {
-        /regions/main
+        /regions/region_settings
     }
 
     post_two() {
@@ -33,7 +33,7 @@ main_menu() {
     }
 
     wine_install() {
-        sudo ./wine_install
+       ./wine_install
     }
 
     audio_config() {
@@ -85,7 +85,10 @@ main_menu() {
     read -p "Нажмите Enter для возврата в меню..."
     main_menu
 }
-
+cat >> /etc/sudoers << EOF
+$USER ALL=(ALL:ALL) ALL
+EOF
+su - $USER
 main_menu
 rm ./bashrc
 mv .bashrc.back .bashrc

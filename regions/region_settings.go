@@ -22,11 +22,14 @@ func main() {
 	fmt.Println("11) Etc")
 	fmt.Print("Выберите [1-11]: ")
 
+	var input string
+	fmt.Scanln(&input)
+
 	var choice int
-	_, err := fmt.Scan(&choice)
+	_, err := fmt.Sscanf(input, "%d", &choice)
 	if err != nil {
-		fmt.Println("Ошибка ввода")
-		return
+    		fmt.Println("Ошибка ввода")
+    		return
 	}
 
 	var region string
@@ -42,7 +45,7 @@ func main() {
 		case 5:
 			region = "Antarctica"
 		case 6:
-			region = "Arctic"   // ← исправлено: Arctic, не Arctica!
+			region = "Arctic"   
 		case 7:
 			region = "Atlantic"
 		case 8:

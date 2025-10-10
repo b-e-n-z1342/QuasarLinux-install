@@ -85,7 +85,7 @@ pulseaudio_sound() {
         fi
     done
 
-    sudo pacman -S --noconfirm --overwrite '*' --needed pulseaudio pulseaudio-alsa pulseaudio-jack
+    sudo pacman -S --noconfirm --overwrite '*' --needed pulseaudio pulseaudio-bluetooth pulseaudio-alsa pulseaudio-jack
     sudo rc-update add pulseaudio --user
 }
 
