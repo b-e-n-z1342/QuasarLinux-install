@@ -53,7 +53,7 @@ VERSION_ID="1.0"
 BUILD_ID="rolling"
 ANSI_COLOR="0;36"
 HOME_URL="https://b-e-n-z1342.github.io"
-LOGO=quasar-logo
+LOGO=quasarlogo
 OS_EOF
 
 cat > /mnt/etc/lsb-release << 'LSB_EOF'
@@ -226,7 +226,7 @@ git_post() {
     cd ~/post
     ./post_install
 }
-cd /post
+cd /install/post
 ## ./network
 ./post_install || git_post
 EOF

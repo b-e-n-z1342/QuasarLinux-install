@@ -18,8 +18,8 @@ main() {
 	$SCRIPT_DIR/users
 	$SCRIPT_DIR/bootloader
 	mkdir /mnt/install
-	cp -r $SCRIPT_DIR/post /mnt/install
-	cp -r $SCRIPT_DIR/regions /mnt/install
+	cp -r /installer/modules/post /mnt/install
+	cp -r /installer/regions /mnt/install
 }
 parted_menu() {
     clear
