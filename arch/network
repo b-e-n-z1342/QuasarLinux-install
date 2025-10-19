@@ -135,4 +135,3 @@ if ! check_internet; then
 fi
 
 echo "Переходим к основной установке..."
-bash ../modules/install

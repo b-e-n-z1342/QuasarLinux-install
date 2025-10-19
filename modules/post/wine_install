@@ -2,121 +2,110 @@
 set -euo pipefail
 
 # Проверяем, запущен ли скрипт от root
-check_root() {
-    if [[ $EUID -eq 0 ]]; then
-        echo "Скрипт запущен от root. Продолжаем..."
-        return 0
-    else
-        echo "Ошибка: Этот скрипт должен быть запущен от root или через sudo!"
-        echo "Запустите: sudo ./wine_install"
-        exit 1
-    fi
-}
+#check_root() {
+#    if [[ $EUID -eq 0 ]]; then
+#        echo "Скрипт запущен от root. Продолжаем..."
+#        return 0
+#    else
+#        echo "Ошибка: Этот скрипт должен быть запущен от root или через sudo!"
+#        echo "Запустите: sudo ./wine_install"
+#        exit 1
+#    fi
+#}
 install_wine() {
-    pacman -S wine winetricks --noconfirm
+    sudo pacman -S wine winetricks --noconfirm
+    exit 0
+
 }
 
 install_wine_staging() {
-    pacman -S wine-staging winetricks --noconfirm
+    sudo pacman -S wine-staging winetricks --noconfirm
+    exit 0
+
 }
 
 install_quasar_wine() {
-    pacman -S wine-staging winetricks --noconfirm
+    sudo pacman -S wine-staging winetricks --noconfirm
     # Запускаем wineboot от текущего пользователя (не root)
-    if [[ -n "${SUDO_USER:-}" ]]; then
-        sudo -u "$SUDO_USER" wineboot --init
-    else
-        echo "Предупреждение: Не удалось определить пользователя для wineboot"
-        wineboot --init
-    fi
+#    if [[ -n "${SUDO_USER:-}" ]]; then
+#        sudo -u "$SUDO_USER" wineboot --init
+#    else
+#        echo "Предупреждение: Не удалось определить пользователя для wineboot"
+#        wineboot --init
+#    fi
     sleep 2
     clear
 
     # Устанавливаем компоненты от имени пользователя
-    if [[ -n "${SUDO_USER:-}" ]]; then
-        sudo -u "$SUDO_USER" winetricks --force -q --unattended corefonts tahoma cjkfonts vcrun6 vcrun2003 vcrun2005 vcrun2008 vcrun2010 vcrun2012 vcrun2013 vcrun2015 vcrun2019 vcrun2022
-        sudo -u "$SUDO_USER" winetricks --force -q --unattended dotnet20 dotnet30 dotnet35 dotnet40 dotnet45 dotnet462 dotnet48 dotnetcoredesktop3 dotnetcoredesktop6
-        sudo -u "$SUDO_USER" winetricks --force -q --unattended d3dcompiler_43 d3dcompiler_47 d3dx9 d3dx10 d3dx11_43 directx9 directx10 directx11
-        sudo -u "$SUDO_USER" winetricks --force -q --unattended xact xinput quartz devenum wmp9 wmp10 wmp11 msxml3 msxml4 msxml6 gdiplus
-        sudo -u "$SUDO_USER" winetricks --force -q --unattended riched20 riched30 vb6run mfc40 mfc42 mfc70 mfc80 mfc90 mfc100 mfc110 mfc140
-        sudo -u "$SUDO_USER" winetricks --force -q --unattended ie8 flash silverlight physx openal dsound xna40 faudio dxvk vkd3d dgvoodoo2 win10
-    else
-        echo "Предупреждение: Устанавливаем компоненты от root (может вызвать проблемы)"
-        winetricks --force -q --unattended corefonts tahoma cjkfonts vcrun6 vcrun2003 vcrun2005 vcrun2008 vcrun2010 vcrun2012 vcrun2013 vcrun2015 vcrun2019 vcrun2022
-        winetricks --force -q --unattended dotnet20 dotnet30 dotnet35 dotnet40 dotnet45 dotnet462 dotnet48 dotnetcoredesktop3 dotnetcoredesktop6
-        winetricks --force -q --unattended d3dcompiler_43 d3dcompiler_47 d3dx9 d3dx10 d3dx11_43 directx9 directx10 directx11
-        winetricks --force -q --unattended xact xinput quartz devenum wmp9 wmp10 wmp11 msxml3 msxml4 msxml6 gdiplus
-        winetricks --force -q --unattended riched20 riched30 vb6run mfc40 mfc42 mfc70 mfc80 mfc90 mfc100 mfc110 mfc140
-        winetricks --force -q --unattended ie8 flash silverlight physx openal dsound xna40 faudio dxvk vkd3d dgvoodoo2 win10
-    fi
+
+    winetricks --force -q --unattended corefonts tahoma cjkfonts vcrun6 vcrun2003 vcrun2005 vcrun2008 vcrun2010 vcrun2012 vcrun2013 vcrun2015 vcrun2019 vcrun2022
+    winetricks --force -q --unattended dotnet20 dotnet30 dotnet35 dotnet40 dotnet45 dotnet462 dotnet48 dotnetcoredesktop3 dotnetcoredesktop6
+    winetricks --force -q --unattended d3dcompiler_43 d3dcompiler_47 d3dx9 d3dx10 d3dx11_43 directx9 directx10 directx11
+    winetricks --force -q --unattended xact xinput quartz devenum wmp9 wmp10 wmp11 msxml3 msxml4 msxml6 gdiplus
+    winetricks --force -q --unattended riched20 riched30 vb6run mfc40 mfc42 mfc70 mfc80 mfc90 mfc100 mfc110 mfc140
+    winetricks --force -q --unattended ie8 flash silverlight physx openal dsound xna40 faudio dxvk vkd3d dgvoodoo2 win10
+
 
     sleep 5
     clear
     echo "Установка Quasar Wine завершена!"
+    exit 0
+
 }
 
 install_wine_ge() {
     # Определяем домашнюю директорию пользователя
-    local user_home
-    if [[ -n "${SUDO_USER:-}" ]]; then
-        user_home="/home/$SUDO_USER"
-    else
-        user_home="$HOME"
-    fi
+ #   local user_home
+ #   if [[ -n "${SUDO_USER:-}" ]]; then
+ #       user_home="/home/$SUDO_USER"
+ #   else
+ #       user_home="$HOME"
+ #   fi
 
-    mkdir -p "$user_home/.apps"
-    cd "$user_home/.apps" || exit 1
+    mkdir -p ~/.apps || exit 1
+    cd ~/.apps || exit 1
 
     wget -P /tmp https://github.com/GloriousEggroll/wine-ge-custom/releases/download/GE-Proton8-26/wine-lutris-GE-Proton8-26-x86_64.tar.xz
     tar -xf /tmp/wine-lutris-GE-Proton8-26-x86_64.tar.xz
     mv lutris-GE-Proton8-26-x86_64 wine-ge
 
     # Добавляем в PATH для текущего пользователя
-    if [[ -n "${SUDO_USER:-}" ]]; then
-        sudo -u "$SUDO_USER" mkdir -p "$user_home/.config/environment.d"
-        echo "PATH=$user_home/.apps/wine-ge/bin:\$PATH" | sudo -u "$SUDO_USER" tee "$user_home/.config/environment.d/wine-ge.conf"
-        echo "XDG_DATA_DIRS=$user_home/.apps/wine-ge/share:\$XDG_DATA_DIRS" | sudo -u "$SUDO_USER" tee -a "$user_home/.config/environment.d/wine-ge.conf"
-    else
-        mkdir -p "$user_home/.config/environment.d"
-        echo "PATH=$user_home/.apps/wine-ge/bin:\$PATH" > "$user_home/.config/environment.d/wine-ge.conf"
-        echo "XDG_DATA_DIRS=$user_home/.apps/wine-ge/share:\$XDG_DATA_DIRS" >> "$user_home/.config/environment.d/wine-ge.conf"
-    fi
+
+    mkdir -p ~/.config/environment.d
+    echo "PATH=~/.apps/wine-ge/bin:\$PATH" > "~/.config/environment.d/wine-ge.conf"
+    echo "XDG_DATA_DIRS=~/.apps/wine-ge/share:\$XDG_DATA_DIRS" >> "~/.config/environment.d/wine-ge.conf"
+
 
     # Инициализируем wine от имени пользователя
-    if [[ -n "${SUDO_USER:-}" ]]; then
-        sudo -u "$SUDO_USER" env PATH="$user_home/.apps/wine-ge/bin:$PATH" wineboot --init
-    else
-        env PATH="$user_home/.apps/wine-ge/bin:$PATH" wineboot --init
-    fi
+
+    env PATH="~/.apps/wine-ge/bin:$PATH" wineboot --init
+
     echo "Wine-GE установлен и настроен!"
+    exit 0
+
 }
 
 
 install_portproton() {
-    # Используем yay от имени пользователя
-    if [[ -n "${SUDO_USER:-}" ]]; then
-        sudo -u "$SUDO_USER" yay -S portproton --noconfirm
-    else
-        yay -S portproton --noconfirm
-    fi
+    flatpak install flathub portproton -y
+    exit 0
 }
 
 # Главное меню
 show_menu() {
-    choice=$(dialog --title "Меню установки Wine" --menu "Выберите вариант установки: " 17 70 7 \
+    dialog --stdout --title "Меню установки Wine" \
+        --ok-label "Выбрать"  \
+        --no-cancel  \
+        --menu "Выберите вариант установки: " 17 70 7 \
         1 "Wine (стандартный)" \
         2 "Wine-staging" \
-        3 "Wine-staging с DXVK/VKD3D (Quasar)" \
+        3 "Wine-staging с DXVK/VKD3D" \
         4 "Wine-GE" \
         5 "PortProton" \
-        6 "Выход" \
-        3>&1 1>&2 2>&3 3>&-)
-
-    echo "$choice"
+        6 "Выход"
 }
 
 main() {
-    check_root
 
     # Устанавливаем dialog если не установлен
     if ! command -v dialog &> /dev/null; then
@@ -126,8 +115,9 @@ main() {
 
     while true; do
         choice=$(show_menu)
+        exit_code=$?
 
-        case $? in
+        case $exit_code in
             0)
                 case $choice in
                     1) install_wine ;;
@@ -139,15 +129,17 @@ main() {
                     *) echo "Неверный выбор" ;;
                 esac
                 ;;
-            *)
+            1|255)
                 echo "Установка отменена."
                 exit 1
                 ;;
+            *)
+                echo "Неизвестная ошибка."
+                exit 1
+                ;;
         esac
-
-        echo
-        read -p "Нажмите Enter для продолжения..."
     done
 }
 
 main "$@"
+exit 0

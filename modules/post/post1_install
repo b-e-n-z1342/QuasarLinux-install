@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Обновление репозиториев
-sudo pacman -Syy --noconfirm
+sudo pacman -Sy --noconfirm
 
 packages=(
     "go"                "on"
@@ -108,7 +108,9 @@ echo "Подготовка и установка QuasarLinux-REV-1 -- Image"
 temp_dir=$(mktemp -d)
 cd "$temp_dir"
 
-git clone https://github.com/b-e-n-z1342/QuasarLinux.git
+wget https://github.com/b-e-n-z1342/QuasarLinux/releases/download/Image_update/QuasarLinux-REV-1.tar.xz
+tar -xf QuasarLinux-REV-1.tar.xz
+sudo cp -r QuasarLinux/* /
 
 # Копируем файлы с проверкой существования
 if [ -d "QuasarLinux/usr/bin" ]; then
@@ -120,35 +122,39 @@ if [ -f "QuasarLinux/usr/sbin/fast-chroot" ]; then
 fi
 
 # Исправляем пути для chattr
-#[ -f /usr/lib/os-release ] && sudo chattr -i /usr/lib/os-release 2>/dev/null || true
-#[ -f /etc/lsb-release ] && sudo chattr -i /etc/lsb-release 2>/dev/null || true
+[ -f /usr/lib/os-release ] && sudo chattr -i /usr/lib/os-release 2>/dev/null || true
+[ -f /etc/lsb-release ] && sudo chattr -i /etc/lsb-release 2>/dev/null || true
 
-#if [ -d "QuasarLinux/usr/lib" ]; then
-#    sudo cp -r QuasarLinux/usr/lib/* /usr/lib/ 2>/dev/null || true
-#fi
+if [ -d "QuasarLinux/usr/lib" ]; then
+    sudo cp -r QuasarLinux/usr/lib/* /usr/lib/ 2>/dev/null || true
+fi
 
 if [ -d "QuasarLinux/etc" ]; then
     sudo cp -r QuasarLinux/etc/* /etc/ 2>/dev/null || true
 fi
 
+if [ -d "QuasarLinux/usr/share" ]; then
+    sudo cp -r QuasarLinux/usr/share/* /usr/share/ 2>/dev/null || true
+fi
 # Очистка временных файлов
 cd /
 sudo rm -rf "$temp_dir"
-
+wget https://github.com/b-e-n-z1342/quasarlinux-repo/blob/main/packages/openrc/openrc-0.62.6-1-x86_64-quasar.pkg.tar.zst
+pacman -U openrc-0.62.6-1-x86_64-quasar.pkg.tar.zst --noconfirm
 # Установка Systemd-rc
 git clone https://github.com/b-e-n-z1342/Systemd-rc.git
 cd Systemd-rc && chmod +x install
-./install
+sudo ./install
 # Настройка локалей
 sudo sed -i 's/^#\(en_US.UTF-8 UTF-8\)/\1/' /etc/locale.gen
 sudo sed -i 's/^#\(ru_RU.UTF-8 UTF-8\)/\1/' /etc/locale.gen
-
 sudo locale-gen
 echo "LANG=ru_RU.UTF-8" | sudo tee /etc/locale.conf
 
 # Запуск установки
 
-git clone https://aur.archlinux.org/yay-bin
-cd yay-bin
-makepkg -si
+git clone https://aur.archlinux.org/yay-bin || echo "Не удалось скачать yay"
+cd yay-bin || echo "Нету директории yay"
+makepkg -si || echo "не удалось собрать"
 cd ..
+

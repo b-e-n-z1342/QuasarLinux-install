@@ -18,22 +18,27 @@ if [ "$UEFI_MODE" -eq 1 ]; then
         echo "Установка GRUB для UEFI..."
         fast-chroot /mnt pacman -S grub os-prober efibootmgr --noconfirm
         fast-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB --removable --recheck
-        fast-chroot /mnt bash -c 'sed -i "s/^GRUB_DISTRIBUTOR=.*/GRUB_DISTRIBUTOR=\"Quasar Linux\"/" /etc/default/grub || echo "GRUB_DISTRIBUTOR=\"Quasar Linux\"" >> /etc/default/grub'
+        fast-chroot /mnt bash -c 'sed -i "s/^GRUB_DISTRIBUTOR=.*/GRUB_DISTRIBUTOR=\"Quasar\"/" /etc/default/grub || echo "GRUB_DISTRIBUTOR=\"Quasar\"" >> /etc/default/grub'
         fast-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
         echo "GRUB установлен для UEFI"
     }
     
     function efistub() {
+        mount --bind /proc /mnt/proc
+        mount --bind /sys /mnt/sys
+        mount --bind /dev /mnt/dev
+        mount --bind /run /mnt/run
         echo "Установка EFISTUB..."
-        fast-chroot /mnt pacman -S efibootmgr os-prober --noconfirm
-        fast-chroot /mnt efibootmgr -b 0000 -B 2>/dev/null || true
+        chroot /mnt pacman -S efibootmgr os-prober --noconfirm
+        pacman -S efibootmgr --noconfirm
+        efibootmgr -b 0000 -B 2>/dev/null || true
         KERNEL=""
         INITRAMFS=""
-        if fast-chroot /mnt test -f /boot/vmlinuz-linux; then
+        if chroot /mnt test -f /boot/vmlinuz-linux; then
             KERNEL="linux"
-        elif fast-chroot /mnt test -f /boot/vmlinuz-linux-zen; then
+        elif chroot /mnt test -f /boot/vmlinuz-linux-zen; then
             KERNEL="linux-zen"
-        elif fast-chroot /mnt test -f /boot/vmlinuz-linux-lts; then
+        elif chroot /mnt test -f /boot/vmlinuz-linux-lts; then
             KERNEL="linux-lts"
         else
             echo "Ошибка: не найдено ни одно ядро (linux, linux-zen, linux-lts)"
@@ -42,14 +47,18 @@ if [ "$UEFI_MODE" -eq 1 ]; then
         cp "/mnt/boot/vmlinuz-$KERNEL" "/mnt/boot/efi/vmlinuz-$KERNEL.efi"
         cp "/mnt/boot/initramfs-$KERNEL.img" "/mnt/boot/efi/initramfs-$KERNEL.img"
 
-        fast-chroot /mnt efibootmgr -c -d "$DISK" -p 1 -L "QuasarLinux" -l "\\vmlinuz-$KERNEL.efi"  -u "root=UUID=$ROOT_UUID rw initrd=\\initramfs-$KERNEL.img"
+        efibootmgr -c -d "$DISK" -p 1 -L "QuasarLinux" -l "\\vmlinuz-$KERNEL.efi"  -u "root=UUID=$ROOT_UUID rw initrd=\\initramfs-$KERNEL.img"
         echo "EFISTUB настроен"
     }
     
     function refind() {
+        mount --bind /proc /mnt/proc
+        mount --bind /sys /mnt/sys
+        mount --bind /dev /mnt/dev
+        mount --bind /run /mnt/run
         echo "Установка rEFInd..."
-        fast-chroot /mnt pacman -S efibootmgr os-prober refind --noconfirm
-        fast-chroot /mnt refind-instalfast-chroot /mnt efibootmgr -c -d "$DISK" -p 1 -L "QuasarLinux" -l '\vmlinuz-linux.efi' -u "root=UUID=$ROOT_UUID rw initrd=\initramfs-linux.img"l
+        chroot /mnt pacman -S efibootmgr os-prober refind --noconfirm
+        chroot /mnt refind-install
         echo "rEFInd установлен"
     }
 
@@ -57,9 +66,8 @@ if [ "$UEFI_MODE" -eq 1 ]; then
            --ok-label "Выбрать" \
            --no-cancel \
            --menu "Выберите загрузчик:" 15 40 4 \
-           1 "GRUB" \
-           2 "EFISTUB" \
-           3 "rEFInd" 3>&1 1>&2 2>&3)
+           1 "GRUB  (стабильный)" \
+           2 "EFISTUB (прямая загрузка)" 3>&1 1>&2 2>&3)
     
     case $boot in
         1) grub ;;
@@ -120,8 +128,8 @@ EOFD
            --ok-label "Выбрать" \
            --no-cancel \
            --menu "Выберите загрузчик:" 15 40 4 \
-           1 "GRUB" \
-           2 "Syslinux" 3>&1 1>&2 2>&3)
+           1 "GRUB (стабильный)" \
+           2 "Syslinux (легкий)" 3>&1 1>&2 2>&3)
     
     case $boot in
         1) grub ;;

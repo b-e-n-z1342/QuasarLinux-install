@@ -101,7 +101,16 @@ EOF
     sudo rc-update add wireplumber default
 
     local username=$(get_username)
+
+
     sudo usermod -aG audio "$username"
+    cat >> ~/.bash_profile << EOF
+if test -z "$XDG_RUNTIME_DIR"; then
+    export XDG_RUNTIME_DIR=$(mktemp -d /tmp/$(id -u)-runtime-dir.XXX)
+fi
+exec dbus-launch --exit-with-session
+pipewire & pipewire-pulse & wireplumber &
+EOF
 
     echo "PipeWire установлен и настроен"
 }

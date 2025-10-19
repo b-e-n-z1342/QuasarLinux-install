@@ -15,7 +15,6 @@ plasma() {
     sudo chmod 0755 /var/lib/sddm /var/run/sddm
     sudo usermod -aG seat,video,input sddm || echo "Error 1"
     sudo usermod -aG video,input sddm || echo "Error 2"
-    sudo pacman -S --noconfirm plasma-localization-ru kde-l10n-ru || echo "Error 3"
     sudo rc-update add sddm default
 }
 
