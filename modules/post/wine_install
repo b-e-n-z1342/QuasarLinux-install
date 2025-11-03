@@ -100,9 +100,8 @@ show_menu() {
         1 "Wine (стандартный)" \
         2 "Wine-staging" \
         3 "Wine-staging с DXVK/VKD3D" \
-        4 "Wine-GE" \
-        5 "PortProton" \
-        6 "Выход"
+        4 "PortProton" \
+        5 "Выход"
 }
 
 main() {
@@ -123,9 +122,9 @@ main() {
                     1) install_wine ;;
                     2) install_wine_staging ;;
                     3) install_quasar_wine ;;
-                    4) install_wine_ge ;;
-                    5) install_portproton ;;
-                    6) echo "Выход..."; exit 0 ;;
+                    12) install_wine_ge ;;
+                    4) install_portproton ;;
+                    5) echo "Выход..."; exit 0 ;;
                     *) echo "Неверный выбор" ;;
                 esac
                 ;;

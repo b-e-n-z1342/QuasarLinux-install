@@ -9,8 +9,8 @@
 # Then put the resulting list on top of this file.
 
 # Default mirrors
-#Server = https://mirror.clarkson.edu/artix-linux/repos/$repo/os/$arch
-#Server = https://mirrors.dotsrc.org/artix-linux/repos/$repo/os/$arch
+Server = https://mirror.clarkson.edu/artix-linux/repos/$repo/os/$arch
+Server = https://mirrors.dotsrc.org/artix-linux/repos/$repo/os/$arch
 
 ## Europe
 # Czech Republic

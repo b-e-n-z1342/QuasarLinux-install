@@ -5,7 +5,6 @@ set -euo pipefail
 sudo pacman -Sy --noconfirm
 
 packages=(
-    "go"                "on"
     "qt5"               "off"
     "qt6"               "on"
     "ffmpeg"            "off"
@@ -84,7 +83,7 @@ case $dialog_exit_code in
             echo "Устанавливаем пакеты: $selected"
             # Убираем кавычки из вывода dialog
             install_list=$(echo "$selected" | tr -d '"')
-            sudo pacman -S --noconfirm $install_list
+            sudo pacman -S --noconfirm $install_list go
         else
             echo "Не выбрано ни одного пакета."
         fi
@@ -102,49 +101,39 @@ case $dialog_exit_code in
 esac
 
 clear
-echo "Подготовка и установка QuasarLinux-REV-1 -- Image"
+#echo "Подготовка и установка QuasarLinux-REV-1 -- Image"
 
 # Создаем временную директорию и работаем в ней
-temp_dir=$(mktemp -d)
-cd "$temp_dir"
+#temp_dir=$(mktemp -d)
+#cd "$temp_dir"
 
-wget https://github.com/b-e-n-z1342/QuasarLinux/releases/download/Image_update/QuasarLinux-REV-1.tar.xz
-tar -xf QuasarLinux-REV-1.tar.xz
-sudo cp -r QuasarLinux/* /
+#wget -O QuasarLinux-REV-1.tar.xz "https://github.com/b-e-n-z1342/QuasarLinux/releases/download/Image_update/quasarlinux-img.tar.xz" || { echo "Не скачалось"; exit 1; }
 
-# Копируем файлы с проверкой существования
-if [ -d "QuasarLinux/usr/bin" ]; then
-    sudo cp -r QuasarLinux/usr/bin/* /usr/bin/ 2>/dev/null || true
-fi
+#downloaded_hash=$(sha256sum QuasarLinux-REV-1.tar.xz | cut -d' ' -f1)
+#expected_hash="d0fe71da08d057c7bd46f29c4c12ce6ee19f6cef16bd9f23141d016b7c4eeabd"
+#if [ "$downloaded_hash" = "$expected_hash" ]; then
+#    echo "Хеш совпал, распаковываю..."
+#    sudo tar -xf QuasarLinux-REV-1.tar.xz -C /
+#else
+#    echo "Хеш не совпал! Ожидалось: $expected_hash"
+#    echo "Получено: $downloaded_hash"
+#    exit 1
+#fi
 
-if [ -f "QuasarLinux/usr/sbin/fast-chroot" ]; then
-    sudo cp QuasarLinux/usr/sbin/fast-chroot /usr/sbin/ 2>/dev/null || true
-fi
 
-# Исправляем пути для chattr
-[ -f /usr/lib/os-release ] && sudo chattr -i /usr/lib/os-release 2>/dev/null || true
-[ -f /etc/lsb-release ] && sudo chattr -i /etc/lsb-release 2>/dev/null || true
-
-if [ -d "QuasarLinux/usr/lib" ]; then
-    sudo cp -r QuasarLinux/usr/lib/* /usr/lib/ 2>/dev/null || true
-fi
-
-if [ -d "QuasarLinux/etc" ]; then
-    sudo cp -r QuasarLinux/etc/* /etc/ 2>/dev/null || true
-fi
-
-if [ -d "QuasarLinux/usr/share" ]; then
-    sudo cp -r QuasarLinux/usr/share/* /usr/share/ 2>/dev/null || true
-fi
 # Очистка временных файлов
-cd /
-sudo rm -rf "$temp_dir"
-wget https://github.com/b-e-n-z1342/quasarlinux-repo/blob/main/packages/openrc/openrc-0.62.6-1-x86_64-quasar.pkg.tar.zst
-pacman -U openrc-0.62.6-1-x86_64-quasar.pkg.tar.zst --noconfirm
+#cd /
+#sudo rm -rf "$temp_dir"
+#wget https://raw.githubusercontent.com/b-e-n-z1342/quasarlinux-repo/main/packages/openrc/openrc-0.62.6-1-x86_64-quasar.pkg.tar.zst
+#pacman -U openrc-0.62.6-1-x86_64-quasar.pkg.tar.zst --noconfirm
 # Установка Systemd-rc
 git clone https://github.com/b-e-n-z1342/Systemd-rc.git
 cd Systemd-rc && chmod +x install
 sudo ./install
+
+git clone https://github.com/b-e-n-z1342/neofetch.git
+cd neofetch
+sudo make install
 # Настройка локалей
 sudo sed -i 's/^#\(en_US.UTF-8 UTF-8\)/\1/' /etc/locale.gen
 sudo sed -i 's/^#\(ru_RU.UTF-8 UTF-8\)/\1/' /etc/locale.gen
@@ -153,8 +142,4 @@ echo "LANG=ru_RU.UTF-8" | sudo tee /etc/locale.conf
 
 # Запуск установки
 
-git clone https://aur.archlinux.org/yay-bin || echo "Не удалось скачать yay"
-cd yay-bin || echo "Нету директории yay"
-makepkg -si || echo "не удалось собрать"
-cd ..
-
+cd

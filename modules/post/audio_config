@@ -13,17 +13,15 @@ jack() {
 }
 
 audio=$(dialog --title "Меню" --menu "Выберите звуковой сервер: " 15 70 5 \
-    1 "pipewire (не работает)" \
-    2 "pulseaudio  (рекомендуется)" \
-    3 "jack2 (только для студий, эсперементальный)" \
+    1 "pulseaudio  (рекомендуется)" \
     3>&1 1>&2 2>&3 3>&-)
 
 case $? in
     0)
         clear
         case $audio in
-            1) pipe ;;
-            2) pulse ;;
+            2) pipe ;;
+            1) pulse ;;
             3) jack ;;
             *) echo "Неверный выбор" ;;
         esac

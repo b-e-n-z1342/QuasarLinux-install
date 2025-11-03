@@ -44,16 +44,17 @@ esac
 # Создание файлов OS release
 cat > /mnt/usr/lib/os-release << 'OS_EOF'
 NAME="Quasar Linux"
-PRETTY_NAME="Quasar Linux (Artix base)"
+PRETTY_NAME="Quasar Linux"
 ID=quasar
-ID_LIKE=artix
-ANACONDA_ID="quasar"
-VERSION="REV-1-Debug"
-VERSION_ID="1.0"
-BUILD_ID="rolling"
-ANSI_COLOR="0;36"
-HOME_URL="https://b-e-n-z1342.github.io"
+BUILD_ID=rolling
+ANSI_COLOR="38;2;23;147;209"
+HOME_URL="https://b-e-n-z1342/QuasarLinux"
+DOCUMENTATION_URL="https://github.com/b-e-n-z1342/QuasarLinux/wiki"
+SUPPORT_URL="#"
+BUG_REPORT_URL="https://github.com/b-e-n-z1342/QuasarLinux/issues"
+PRIVACY_POLICY_URL="https://b-e-n-z1342.github.io/policy"
 LOGO=quasarlogo
+
 OS_EOF
 
 cat > /mnt/etc/lsb-release << 'LSB_EOF'
@@ -156,7 +157,12 @@ ln -sf /usr/lib/os-release /mnt/etc/os-release 2>/dev/null || true
 
 ##########################################################################################
 
-# Защита системных файлов (только если они существуют)
+if [ -d /installer/configs/pixmaps ]; then
+    rm -rf /mnt/usr/share/pixmaps
+    cp -r /installer/configs/pixmaps /mnt/usr/share
+else
+    echo "Предупреждение: pixmaps не найден"
+fi
 
 ###########################################################################################
 ###################################
@@ -170,7 +176,24 @@ setfont ter-v16n
 cd /post
 sudo ./post_install
 EOF
+clear
+echo "Установка бренда"
 chmod +x /mnt/usr/local/bin/post_install
+wget -O QuasarLinux-REV-1.tar.xz "https://github.com/b-e-n-z1342/QuasarLinux/releases/download/Image_update/quasarlinux-img.tar.xz" || { echo "Не скачалось"; exit 1; }
 
+downloaded_hash=$(sha256sum QuasarLinux-REV-1.tar.xz | cut -d' ' -f1)
+expected_hash="d0fe71da08d057c7bd46f29c4c12ce6ee19f6cef16bd9f23141d016b7c4eeabd"
+
+if [ "$downloaded_hash" = "$expected_hash" ]; then
+    echo "Хеш совпал, распаковываю..."
+    tar -xf QuasarLinux-REV-1.tar.xz
+    cp usr/bin/openrc /mnt/usr/bin/
+
+else
+    echo "Хеш не совпал!"
+    echo "Ожидалось: $expected_hash"
+    echo "Получено:  $downloaded_hash"
+    exit 1
+fi
 #
 echo "Базовая установка завершена!"
