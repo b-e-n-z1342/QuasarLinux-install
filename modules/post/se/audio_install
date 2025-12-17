@@ -2,6 +2,17 @@
 audio="$1"
 set -euo pipefail
 
+get_username() {
+    # Безопасное получение имени пользователя
+    if [ -n "$SUDO_USER" ]; then
+        echo "$SUDO_USER"
+    elif [ -n "$USER" ]; then
+        echo "$USER"
+    else
+        whoami
+    fi
+}
+
 pipewire_sound() {
     clear
     echo "Установка PipeWire..."
@@ -15,11 +26,93 @@ pipewire_sound() {
         pipewire-alsa pipewire-pulse pipewire-jack \
         wireplumber pipewire-audio \
         pipewire-openrc pipewire-pulse-openrc
+
+    clear
+
+    # Создаем службы OpenRC
+    sudo mkdir -p /etc/init.d
+
+    sudo tee /etc/init.d/pipewire > /dev/null << 'EOF'
+#!/sbin/openrc-run
+
+command="/usr/bin/pipewire"
+command_args=""
+pidfile="/run/${RC_SVCNAME}.pid"
+
+depend() {
+    need dbus
+    need elogind
+    after dbus
+    after elogind
+}
+EOF
+
+    sudo tee /etc/init.d/wireplumber > /dev/null << 'EOF'
+#!/sbin/openrc-run
+
+command="/usr/bin/wireplumber"
+command_args=""
+pidfile="/run/${RC_SVCNAME}.pid"
+
+depend() {
+    need pipewire
+    need dbus
+    need elogind
+    after pipewire
+}
+EOF
+
+    # Универсальный конфиг ALSA
+    sudo tee /etc/asound.conf > /dev/null << 'EOF'
+defaults.pcm.card 0
+defaults.ctl.card 0
+
+pcm.!default {
+    type plug
+    slave.pcm {
+        type pipewire
+    }
+}
+
+ctl.!default {
+    type pipewire
+}
+EOF
+
+    # Пользовательский конфиг
+    tee ~/.asoundrc > /dev/null << 'EOF'
+pcm.!default {
+    type plug
+    slave.pcm "pipewire"
+}
+
+ctl.!default {
+    type pipewire
+}
+EOF
+
     # Дополнительные утилиты
     sudo pacman -S --noconfirm pavucontrol
-    sudo rc-update add pipewire --user
-    sudo rc-update add pipewire-pulse --user
-    sudo rc-update add wireplumber --user
+
+    # Права и службы
+    sudo chmod +x /etc/init.d/pipewire
+    sudo chmod +x /etc/init.d/wireplumber
+    sudo rc-update add pipewire default
+    sudo rc-update add wireplumber default
+
+    local username=$(get_username)
+
+
+    sudo usermod -aG audio "$username"
+    cat >> ~/.bash_profile << EOF
+if test -z "$XDG_RUNTIME_DIR"; then
+    export XDG_RUNTIME_DIR=$(mktemp -d /tmp/$(id -u)-runtime-dir.XXX)
+fi
+exec dbus-launch --exit-with-session
+pipewire & pipewire-pulse & wireplumber &
+EOF
+
+    echo "PipeWire установлен и настроен"
 }
 
 pulseaudio_sound() {
@@ -60,8 +153,6 @@ jack_sound() {
     local pipewire_packages=(
         "pipewire" "pipewire-pulse" "pipewire-jack"
         "wireplumber" "pipewire-alsa" "lib32-pipewire"
-        "pipewire-openrc" "pipewire-pulse-openrc"
-        "wireplumber-openrc"
     )
 
     for pkg in "${pipewire_packages[@]}"; do
@@ -74,10 +165,6 @@ jack_sound() {
     # Устанавливаем JACK
     sudo pacman -S --noconfirm --needed \
         jack2 jack2-dbus lib32-jack2 calf
-    sudo pacman -S --noconfirm pavucontrol
-    sudo rc-update add pipewire --user
-    sudo rc-update add pipewire-pulse --user
-    sudo rc-update add wireplumber --user
 
     echo "JACK2 установлен"
 }

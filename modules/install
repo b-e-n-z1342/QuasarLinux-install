@@ -2,17 +2,8 @@
 set -euo pipefail
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 main() {
-	clear
-	echo "Выберите диск"
-	lsblk -d -o NAME,SIZE,MODEL,TYPE
-	read -p "Введите имя диска (например, sda/nvme0n1): " DISK
-	DISK="/dev/$DISK"
-	if [ ! -e "$DISK" ]; then
-		echo "Ошибка: диск $DISK не существует!"
-       	exit 1
-	fi
-	cfdisk $DISK
-	$SCRIPT_DIR/parted "$DISK"
+	chmod +x $SCRIPT_DIR/parted_sh/*
+	$SCRIPT_DIR/parted
 	$SCRIPT_DIR/basepack
 	$SCRIPT_DIR/inst_pack
 	$SCRIPT_DIR/users
@@ -20,16 +11,8 @@ main() {
 	mkdir /mnt/install
 }
 parted_menu() {
-    clear
-	echo "Выберите диск"
-	lsblk -d -o NAME,SIZE,MODEL,TYPE
-	read -p "Введите имя диска (например, sda/nvme0n1): " DISK
-	DISK="/dev/$DISK"
-	if [ ! -e "$DISK" ]; then
-		echo "Ошибка: диск $DISK не существует!"
-       	exit 1
-	fi
-	cfdisk $DISK
+	chmod +x $SCRIPT_DIR/parted_sh/*
+	$SCRIPT_DIR/parted
 }
 user() {
 	clear
@@ -38,16 +21,27 @@ user() {
 }
 
 while true; do
-    seting=$(dialog --title "Quasar-install" --menu "Выберите пункт:" 15 70 6 \
-        1 "Экспресс" \
-        2 "Разметка" \
-        3 "Установка базы" \
-        4 "Установка пакетов" \
-        5 "Настройка пользователей" \
-        6 "Установка загрузчика" \
-        7 "Выход" \
-        3>&1 1>&2 2>&3 3>&-)
-
+    if [ "${LENG_MODE:-}" = "ru" ]; then
+        seting=$(dialog --title "Quasar-install" --menu "Выберите пункт:" 15 70 6 \
+            1 "Экспресс" \
+            2 "Разметка" \
+            3 "Установка базы" \
+            4 "Установка пакетов" \
+            5 "Настройка пользователей" \
+            6 "Установка загрузчика" \
+            7 "Выход" \
+            3>&1 1>&2 2>&3 3>&-)
+    elif [ "${LENG_MODE:-}" = "eu" ]; then
+        seting=$(dialog --title "Quasar-install" --menu "Select option:" 15 70 7 \
+            1 "Express setup" \
+            2 "Partitioning" \
+            3 "Install base system" \
+            4 "Install packages" \
+            5 "User setup" \
+            6 "Install bootloader" \
+            7 "Exit" \
+            3>&1 1>&2 2>&3 3>&-)
+    fi
     [ $? -ne 0 ] && break   # если жмём ESC/Cancel → выход
 
     case $seting in

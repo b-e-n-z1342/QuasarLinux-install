@@ -16,8 +16,6 @@ packages=(
     "qemu-full"         "off"
     "qemu-base"         "off"
     "grub-customizer"   "off"
-    "wayland"           "on"
-    "xorg"              "on"
     "gtk2"              "off"
     "gtk3"              "off"
     "gtk4"              "off"
@@ -83,7 +81,74 @@ case $dialog_exit_code in
             echo "Устанавливаем пакеты: $selected"
             # Убираем кавычки из вывода dialog
             install_list=$(echo "$selected" | tr -d '"')
-            sudo pacman -S --noconfirm $install_list go
+            sudo pacman -S --noconfirm $install_list
+
+            # Активация сервисов для выбранных пакетов
+            echo "Активация сервисов..."
+
+            # Добавление dbus в автозагрузку
+            if rc-update add dbus default; then
+                echo "dbus успешно добавлен в автозагрузку"
+            else
+                echo "пропускаем dbus..."
+            fi
+
+            # Активация сервисов для выбранных пакетов
+            for pkg in $install_list; do
+                case $pkg in
+                    "qbittorrent-openrc")
+                        if rc-update add qbittorrent default; then
+                            echo "qbittorrent успешно добавлен в автозагрузку"
+                        else
+                            echo "пропускаем qbittorrent..."
+                        fi
+                        ;;
+                    "libvirt-openrc")
+                        if rc-update add libvirtd default; then
+                            echo "libvirtd успешно добавлен в автозагрузку"
+                        else
+                            echo "пропускаем libvirtd..."
+                        fi
+                        ;;
+                    "docker-openrc")
+                        if rc-update add docker default; then
+                            echo "docker успешно добавлен в автозагрузку"
+                        else
+                            echo "пропускаем docker..."
+                        fi
+                        ;;
+                    "cups-openrc")
+                        if rc-update add cupsd default; then
+                            echo "cupsd успешно добавлен в автозагрузку"
+                        else
+                            echo "пропускаем cupsd..."
+                        fi
+                        ;;
+                    "apcupsd-openrc")
+                        if rc-update add apcupsd default; then
+                            echo "apcupsd успешно добавлен в автозагрузку"
+                        else
+                            echo "пропускаем apcupsd..."
+                        fi
+                        ;;
+                    "bluez-openrc")
+                        if rc-update add bluetooth default; then
+                            echo "bluetooth успешно добавлен в автозагрузку"
+                        else
+                            echo "пропускаем bluetooth..."
+                        fi
+                        ;;
+                    "polkit")
+                        if rc-update add polkit default; then
+                            echo "polkit успешно добавлен в автозагрузку"
+                        else
+                            echo "пропускаем polkit..."
+                        fi
+                        ;;
+                esac
+            done
+
+            echo "Установка завершена!"
         else
             echo "Не выбрано ни одного пакета."
         fi
@@ -100,46 +165,29 @@ case $dialog_exit_code in
         ;;
 esac
 
+
+
+
+
 clear
-#echo "Подготовка и установка QuasarLinux-REV-1 -- Image"
-
-# Создаем временную директорию и работаем в ней
-#temp_dir=$(mktemp -d)
-#cd "$temp_dir"
-
-#wget -O QuasarLinux-REV-1.tar.xz "https://github.com/b-e-n-z1342/QuasarLinux/releases/download/Image_update/quasarlinux-img.tar.xz" || { echo "Не скачалось"; exit 1; }
-
-#downloaded_hash=$(sha256sum QuasarLinux-REV-1.tar.xz | cut -d' ' -f1)
-#expected_hash="d0fe71da08d057c7bd46f29c4c12ce6ee19f6cef16bd9f23141d016b7c4eeabd"
-#if [ "$downloaded_hash" = "$expected_hash" ]; then
-#    echo "Хеш совпал, распаковываю..."
-#    sudo tar -xf QuasarLinux-REV-1.tar.xz -C /
-#else
-#    echo "Хеш не совпал! Ожидалось: $expected_hash"
-#    echo "Получено: $downloaded_hash"
-#    exit 1
-#fi
-
-
-# Очистка временных файлов
-#cd /
-#sudo rm -rf "$temp_dir"
-#wget https://raw.githubusercontent.com/b-e-n-z1342/quasarlinux-repo/main/packages/openrc/openrc-0.62.6-1-x86_64-quasar.pkg.tar.zst
-#pacman -U openrc-0.62.6-1-x86_64-quasar.pkg.tar.zst --noconfirm
-# Установка Systemd-rc
+sudo mkdir -p /source
+cd /source
 git clone https://github.com/b-e-n-z1342/Systemd-rc.git
 cd Systemd-rc && chmod +x install
 sudo ./install
-
+cd ..
 git clone https://github.com/b-e-n-z1342/neofetch.git
 cd neofetch
 sudo make install
 # Настройка локалей
-sudo sed -i 's/^#\(en_US.UTF-8 UTF-8\)/\1/' /etc/locale.gen
-sudo sed -i 's/^#\(ru_RU.UTF-8 UTF-8\)/\1/' /etc/locale.gen
-sudo locale-gen
-echo "LANG=ru_RU.UTF-8" | sudo tee /etc/locale.conf
-
+#sudo sed -i 's/^#\(en_US.UTF-8 UTF-8\)/\1/' /etc/locale.gen
+#sudo sed -i 's/^#\(ru_RU.UTF-8 UTF-8\)/\1/' /etc/locale.gen
+#sudo locale-gen
+#echo "LANG=ru_RU.UTF-8" | sudo tee /etc/locale.conf
+cd /
 # Запуск установки
-
-cd
+#git clone https://github.com/quasarfoks/qbox.git
+#cd qbox && chmod +x install_qbox
+#sudo ./install_qbox
+#cd
+rm -rf /source
